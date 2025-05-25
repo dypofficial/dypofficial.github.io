@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Data Diri 3D Interactive</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            perspective: 1000px;
+            overflow-x: hidden;
+        }
+
+        /* 3D Background Animation */
+        .background-3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .floating-cube {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform-style: preserve-3d;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-cube:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-cube:nth-child(2) {
+            top: 20%;
+            right: 15%;
+            animation-delay: 2s;
+        }
+
+        .floating-cube:nth-child(3) {
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        .floating-cube:nth-child(4) {
+            bottom: 30%;
+            right: 10%;
+            animation-delay: 1s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+            }
+            25% {
+                transform: translateY(-20px) rotateX(45deg) rotateY(45deg);
+            }
+            50% {
+                transform: translateY(-10px) rotateX(90deg) rotateY(90deg);
+            }
+            75% {
+                transform: translateY(-30px) rotateX(135deg) rotateY(135deg);
+            }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            transform-style: preserve-3d;
+            animation: containerEntry 1s ease-out;
+        }
+
+        @keyframes containerEntry {
+            from {
+                opacity: 0;
+                transform: translateZ(-200px) rotateX(20deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateZ(0px) rotateX(0deg);
+            }
+        }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.2),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transition: all 0.3s ease;
+        }
+
+        .form-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 
+                0 35px 70px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.3);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+            100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            animation: titlePulse 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titlePulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .form-container {
+            padding: 50px;
+            position: relative;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .form-group {
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 15px;
+            transform: translateZ(-10px);
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+
+        .form-group:hover::before {
+            opacity: 1;
+            transform: translateZ(-5px) scale(1.02);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1rem;
+            transform: translateZ(10px);
+            transition: all 0.3s ease;
+        }
+
+        .form-group:hover label {
+            color: #667eea;
+            transform: translateZ(15px) translateY(-2px);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid rgba(230, 230, 230, 0.8);
+            border-radius: 15px;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 
+                0 10px 25px rgba(102, 126, 234, 0.2),
+                0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-8px) translateZ(20px);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #667eea;
+            font-size: 1.2rem;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-group:hover .input-icon {
+            transform: translateY(-50%) scale(1.2);
+            color: #764ba2;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: block;
+            margin: 40px auto 0;
+            min-width: 220px;
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-submit:hover::before {
+            left: 100%;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-8px) translateZ(20px) rotateX(10deg);
+            box-shadow: 
+                0 20px 40px rgba(102, 126, 234, 0.4),
+                0 0 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .btn-submit:active {
+            transform: translateY(-4px) translateZ(10px) rotateX(5deg);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            transform-style: preserve-3d;
+        }
+
+        .loading.show {
+            display: block;
+            animation: loadingFadeIn 0.5s ease-out;
+        }
+
+        @keyframes loadingFadeIn {
+            from {
+                opacity: 0;
+                transform: translateZ(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateZ(0px);
+            }
+        }
+
+        .spinner-3d {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: spin3d 2s linear infinite;
+        }
+
+        .spinner-face {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        .spinner-face:nth-child(1) { transform: rotateY(0deg) translateZ(30px); }
+        .spinner-face:nth-child(2) { transform: rotateY(90deg) translateZ(30px); }
+        .spinner-face:nth-child(3) { transform: rotateY(180deg) translateZ(30px); }
+        .spinner-face:nth-child(4) { transform: rotateY(270deg) translateZ(30px); }
+        .spinner-face:nth-child(5) { transform: rotateX(90deg) translateZ(30px); }
+        .spinner-face:nth-child(6) { transform: rotateX(-90deg) translateZ(30px); }
+
+        @keyframes spin3d {
+            0% { transform: rotateX(0deg) rotateY(0deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg); }
+        }
+
+        .success-message, .error-message {
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+            transform-style: preserve-3d;
+            backdrop-filter: blur(10px);
+        }
+
+        .success-message {
+            background: rgba(212, 237, 218, 0.9);
+            color: #155724;
+            border: 2px solid rgba(195, 230, 203, 0.8);
+            box-shadow: 0 10px 25px rgba(21, 87, 36, 0.2);
+        }
+
+        .error-message {
+            background: rgba(248, 215, 218, 0.9);
+            color: #721c24;
+            border: 2px solid rgba(245, 198, 203, 0.8);
+            box-shadow: 0 10px 25px rgba(114, 28, 36, 0.2);
+        }
+
+        .success-message.show, .error-message.show {
+            display: block;
+            animation: messageSlide 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) translateZ(-20px) rotateX(-20deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0px) translateZ(0px) rotateX(0deg);
+            }
+        }
+
+        .required {
+            color: #e74c3c;
+            font-weight: 700;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            position: relative;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: progressShine 2s infinite;
+        }
+
+        @keyframes progressShine {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                margin: 5px;
+            }
+            
+            .header {
+                padding: 25px;
+            }
+            
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .form-container {
+                padding: 30px 20px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            input, select, textarea {
+                padding: 14px 16px;
+            }
+            
+            .btn-submit {
+                padding: 16px 30px;
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .form-container {
+                padding: 20px 15px;
+            }
+        }
+
+        /* Particle Effects */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: particleFloat 8s linear infinite;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                opacity: 0;
+                transform: translateY(100vh) scale(0);
+            }
+            10% {
+                opacity: 1;
+                transform: translateY(90vh) scale(1);
+            }
+            90% {
+                opacity: 1;
+                transform: translateY(-10vh) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20vh) scale(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-3d">
+        <div class="floating-cube"></div>
+        <div class="floating-cube"></div>
+        <div class="floating-cube"></div>
+        <div class="floating-cube"></div>
+        <div class="particles" id="particles"></div>
+    </div>
+
+    <div class="container">
+        <div class="form-card">
+            <div class="header">
+                <h1>🌟 Form Data Diri 3D</h1>
+                <p>Sistem modern dengan animasi 3D interaktif</p>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+            
+            <div class="form-container">
+                <div class="success-message" id="successMessage">
+                    ✅ Data berhasil disimpan dengan sempurna!
+                </div>
+                
+                <div class="error-message" id="errorMessage">
+                    ❌ Terjadi kesalahan. Silakan coba lagi.
+                </div>
+                
+                <form id="dataForm">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="namaLengkap">👤 Nama Lengkap <span class="required">*</span></label>
+                            <input type="text" id="namaLengkap" name="namaLengkap" required>
+                            <div class="input-icon">👤</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tempatLahir">🏙️ Tempat Lahir <span class="required">*</span></label>
+                            <input type="text" id="tempatLahir" name="tempatLahir" required>
+                            <div class="input-icon">🏙️</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tanggalLahir">📅 Tanggal Lahir <span class="required">*</span></label>
+                            <input type="date" id="tanggalLahir" name="tanggalLahir" required>
+                            <div class="input-icon">📅</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="agama">🕌 Agama <span class="required">*</span></label>
+                            <select id="agama" name="agama" required>
+                                <option value="">Pilih Agama</option>
+                                <option value="Islam">Islam</option>
+                                <option value="Kristen">Kristen</option>
+                                <option value="Katolik">Katolik</option>
+                                <option value="Hindu">Hindu</option>
+                                <option value="Buddha">Buddha</option>
+                                <option value="Konghucu">Konghucu</option>
+                            </select>
+                            <div class="input-icon">🕌</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="suku">🌍 Suku <span class="required">*</span></label>
+                            <input type="text" id="suku" name="suku" required>
+                            <div class="input-icon">🌍</div>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label for="alamat">🏠 Alamat Lengkap <span class="required">*</span></label>
+                            <textarea id="alamat" name="alamat" placeholder="Masukkan alamat lengkap Anda..." required></textarea>
+                            <div class="input-icon">🏠</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="anakKe">👶 Anak Ke</label>
+                            <input type="number" id="anakKe" name="anakKe" min="1" max="20">
+                            <div class="input-icon">👶</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="hobby">🎯 Hobby</label>
+                            <input type="text" id="hobby" name="hobby" placeholder="Contoh: Membaca, Olahraga, Gaming">
+                            <div class="input-icon">🎯</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="warnaFavorit">🎨 Warna Favorit</label>
+                            <select id="warnaFavorit" name="warnaFavorit">
+                                <option value="">Pilih Warna</option>
+                                <option value="Merah">🔴 Merah</option>
+                                <option value="Biru">🔵 Biru</option>
+                                <option value="Hijau">🟢 Hijau</option>
+                                <option value="Kuning">🟡 Kuning</option>
+                                <option value="Ungu">🟣 Ungu</option>
+                                <option value="Orange">🟠 Orange</option>
+                                <option value="Pink">🩷 Pink</option>
+                                <option value="Hitam">⚫ Hitam</option>
+                                <option value="Putih">⚪ Putih</option>
+                            </select>
+                            <div class="input-icon">🎨</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="universitasKuliah">🎓 Kuliah di</label>
+                            <input type="text" id="universitasKuliah" name="universitasKuliah" placeholder="Nama Universitas/Perguruan Tinggi">
+                            <div class="input-icon">🎓</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="jurusan">📚 Jurusan</label>
+                            <input type="text" id="jurusan" name="jurusan" placeholder="Program Studi/Jurusan">
+                            <div class="input-icon">📚</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="semester">📖 Semester</label>
+                            <select id="semester" name="semester">
+                                <option value="">Pilih Semester</option>
+                                <option value="1">Semester 1</option>
+                                <option value="2">Semester 2</option>
+                                <option value="3">Semester 3</option>
+                                <option value="4">Semester 4</option>
+                                <option value="5">Semester 5</option>
+                                <option value="6">Semester 6</option>
+                                <option value="7">Semester 7</option>
+                                <option value="8">Semester 8</option>
+                                <option value="9">Semester 9</option>
+                                <option value="10">Semester 10</option>
+                                <option value="Lulus">🎉 Sudah Lulus</option>
+                            </select>
+                            <div class="input-icon">📖</div>
+                        </div>
+                    </div>
+                    
+                    <div class="loading" id="loading">
+                        <div class="spinner-3d">
+                            <div class="spinner-face"></div>
+                            <div class="spinner-face"></div>
+                            <div class="spinner-face"></div>
+                            <div class="spinner-face"></div>
+                            <div class="spinner-face"></div>
+                            <div class="spinner-face"></div>
+                        </div>
+                        <p>Sedang menyimpan data ke cloud...</p>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        🚀 Kirim Data
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Ganti dengan URL Google Apps Script Web App Anda
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCscuiZJBoLRSqUMj6RFdWAmSukod38SDzPXECSjVRcb4n03ArL89IutgvW8yvx6J1/exec';
+        
+        const form = document.getElementById('dataForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const progressBar = document.getElementById('progressBar');
+
+        // Initialize particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            
+            setInterval(() => {
+                if (document.querySelectorAll('.particle').length < 20) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 2 + 's';
+                    particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                    particlesContainer.appendChild(particle);
+                    
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.parentNode.removeChild(particle);
+                        }
+                    }, 8000);
+                }
+            }, 300);
+        }
+
+        // Progress bar update
+        function updateProgress() {
+            const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+            let filled = 0;
+            
+            inputs.forEach(input => {
+                if (input.value.trim()) {
+                    filled++;
+                }
+            });
+            
+            const progress = (filled / inputs.length) * 100;
+            progressBar.style.width = progress + '%';
+        }
+
+        // Form submission
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            hideMessages();
+            showLoading();
+            
+            const formData = new FormData(form);
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            data.timestamp = new Date().toLocaleString('id-ID');
+            
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                hideLoading();
+                showSuccessMessage();
+                
+                // Create success animation
+                createSuccessAnimation();
+                
+                setTimeout(() => {
+                    form.reset();
+                    hideMessages();
+                    updateProgress();
+                }, 4000);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                hideLoading();
+                showErrorMessage();
+            }
+        });
+
+        function showLoading() {
+            loading.classList.add('show');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Mengirim...';
+        }
+
+        function hideLoading() {
+            loading.classList.remove('show');
+            submitBtn.disabled = false;
+            submitBtn.textContent = '🚀 Kirim Data';
+        }
+
+        function showSuccessMessage() {
+            successMessage.classList.add('show');
+            autoHideMessage();
+        }
+
+        function showErrorMessage() {
+            errorMessage.classList.add('show');
+            autoHideMessage();
+        }
+
+        function hideMessages() {
+            successMessage.classList.remove('show');
+            errorMessage.classList.remove('show');
+        }
+
+        function autoHideMessage() {
+            setTimeout(() => {
+                hideMessages();
+            }, 5000);
+        }
+
+        function createSuccessAnimation() {
+            // Create floating success particles
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.left = '50%';
+                particle.style.top = '50%';
+                particle.style.width = '10px';
+                particle.style.height = '10px';
+                particle.style.background = '#28a745';
+                particle.style.borderRadius = '50%';
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '9999';
+                particle.style.animation = `successParticle 2s ease-out forwards`;
+                particle.style.animationDelay = (i * 0.1) + 's';
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, 2000);
+            }
+        }
+
+        // Add CSS for success particles
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes successParticle {
+                0% {
+                    transform: translate(-50%, -50%) scale(0);
+                    opacity: 1;
+                }
+                50% {
+                    transform: translate(-50%, -50%) scale(2);
+                    opacity: 0.8;
+                }
+                100% {
+                    transform: translate(${Math.random() * 400 - 200}px, ${Math.random() * 400 - 200}px) scale(0);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Input event listeners for progress and animations
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('input', updateProgress);
+            
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateZ(20px) scale(1.02)';
+                this.parentElement.style.transition = 'transform 0.3s ease';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateZ(0px) scale(1)';
+            });
+        });
+
+        // Form validation with real-time feedback
+        form.addEventListener('input', function() {
+            const requiredFields = form.querySelectorAll('[required]');
+            let allValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    allValid = false;
+                    field.style.borderColor = '#e74c3c';
+                } else {
+                    field.style.borderColor = '#28a745';
+                }
+            });
+            
+            submitBtn.style.opacity = allValid ? '1' : '0.7';
+            submitBtn.style.transform = allValid ? 'scale(1)' : 'scale(0.95)';
+        });
+
+        // 3D Tilt effect for form card
+        const formCard = document.querySelector('.form-card');
+        let mouseX = 0;
+        let mouseY = 0;
+        let isMouseOver = false;
+
+        formCard.addEventListener('mousemove', function(e) {
+            if (!isMouseOver) return;
+            
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            mouseX = (x / rect.width) * 2 - 1;
+            mouseY = (y / rect.height) * 2 - 1;
+            
+            updateTilt();
+        });
+
+        formCard.addEventListener('mouseenter', function() {
+            isMouseOver = true;
+        });
+
+        formCard.addEventListener('mouseleave', function() {
+            isMouseOver = false;
+            mouseX = 0;
+            mouseY = 0;
+            updateTilt();
+        });
+
+        function updateTilt() {
+            const rotateX = mouseY * -10;
+            const rotateY = mouseX * 10;
+            
+            formCard.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(${isMouseOver ? '20px' : '0px'})`;
+        }
+
+        // Floating animation for form groups
+        const formGroups = document.querySelectorAll('.form-group');
+        formGroups.forEach((group, index) => {
+            group.style.animationDelay = (index * 0.1) + 's';
+            group.style.animation = 'formGroupFloat 0.6s ease-out forwards';
+        });
+
+        // Add floating animation CSS
+        const floatStyle = document.createElement('style');
+        floatStyle.textContent = `
+            @keyframes formGroupFloat {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px) translateZ(-50px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0px) translateZ(0px);
+                }
+            }
+        `;
+        document.head.appendChild(floatStyle);
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            updateProgress();
+            
+            // Add entrance animation to form
+            setTimeout(() => {
+                document.querySelector('.container').style.opacity = '1';
+                document.querySelector('.container').style.transform = 'translateZ(0px) rotateX(0deg)';
+            }, 100);
+        });
+
+        // Responsive 3D effects
+        function handleResize() {
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                // Disable 3D effects on mobile for better performance
+                formCard.style.transform = 'none';
+                formGroups.forEach(group => {
+                    group.style.transform = 'none';
+                });
+            }
+        }
+
+        window.addEventListener('resize', handleResize);
+        handleResize();
+
+        // Enhanced keyboard navigation
+        inputs.forEach((input, index) => {
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && this.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                    const nextInput = inputs[index + 1];
+                    if (nextInput) {
+                        nextInput.focus();
+                    } else {
+                        submitBtn.focus();
+                    }
+                }
+            });
+        });
+
+        // Auto-save to localStorage (for recovery)
+        function autoSave() {
+            const formData = new FormData(form);
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            // Note: In a real implementation, you'd use localStorage here
+            // but since we're in Claude's artifact environment, we'll skip this
+            console.log('Auto-saved data:', data);
+        }
+
+        // Auto-save every 30 seconds
+        setInterval(autoSave, 30000);
+
+        // Load saved data on page load
+        function loadSavedData() {
+            // In a real implementation, you'd load from localStorage here
+            // For now, we'll just log that the function was called
+            console.log('Attempting to load saved data...');
+        }
+
+        // Call loadSavedData on page load
+        window.addEventListener('load', loadSavedData);
+    </script>
+</body>
+</html>
