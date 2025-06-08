@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Tagihan Jasa Turnitin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-section {
+            display: block;
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            margin-top: 10px;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #6c757d;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .table th, .table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .table th {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 600;
+        }
+
+        .table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .table {
+                font-size: 14px;
+            }
+            
+            .table th, .table td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Sistem Tagihan Jasa Turnitin</h1>
+            <p>Platform Manajemen Layanan Turnitin</p>
+        </div>
+
+        <!-- Login Section -->
+        <div class="login-section" id="loginSection">
+            <div class="login-form">
+                <h2 style="text-align: center; margin-bottom: 30px;">Login</h2>
+                <div id="loginError" class="error" style="display: none;"></div>
+                
+                <div class="form-group">
+                    <label for="userType">Tipe User:</label>
+                    <select id="userType">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="username">Username/Email:</label>
+                    <input type="text" id="username" placeholder="Masukkan username atau email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" placeholder="Masukkan password">
+                </div>
+                
+                <button class="btn" onclick="login()">Login</button>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div class="dashboard" id="dashboard">
+            <div class="user-info">
+                <h3>Selamat Datang, <span id="currentUser"></span></h3>
+                <p>Role: <span id="currentRole"></span></p>
+                <button class="btn btn-secondary" onclick="logout()" style="width: auto; float: right;">Logout</button>
+                <div style="clear: both;"></div>
+            </div>
+
+            <!-- User Dashboard -->
+            <div id="userDashboard" style="display: none;">
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('orders')">Pesanan Saya</button>
+                    <button class="tab" onclick="showTab('newOrder')">Buat Pesanan</button>
+                </div>
+
+                <div id="orders" class="tab-content active">
+                    <h3>Daftar Pesanan Turnitin</h3>
+                    <div id="userOrdersLoading" class="loading">Memuat data...</div>
+                    <table class="table" id="userOrdersTable" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Judul Dokumen</th>
+                                <th>Status Turnitin</th>
+                                <th>Status Pembayaran</th>
+                                <th>Total Bayar</th>
+                                <th>Tanggal</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userOrdersBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="newOrder" class="tab-content">
+                    <h3>Buat Pesanan Baru</h3>
+                    <div id="orderSuccess" class="success" style="display: none;"></div>
+                    <div class="form-group">
+                        <label for="documentTitle">Judul Dokumen:</label>
+                        <input type="text" id="documentTitle" placeholder="Masukkan judul dokumen">
+                    </div>
+                    <div class="form-group">
+                        <label for="documentType">Jenis Dokumen:</label>
+                        <select id="documentType">
+                            <option value="skripsi">Skripsi</option>
+                            <option value="tesis">Tesis</option>
+                            <option value="disertasi">Disertasi</option>
+                            <option value="artikel">Artikel</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pageCount">Jumlah Halaman:</label>
+                        <input type="number" id="pageCount" placeholder="Masukkan jumlah halaman" min="1">
+                    </div>
+                    <button class="btn" onclick="createOrder()">Buat Pesanan</button>
+                </div>
+            </div>
+
+            <!-- Admin Dashboard -->
+            <div id="adminDashboard" style="display: none;">
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('allOrders')">Semua Pesanan</button>
+                    <button class="tab" onclick="showTab('users')">Kelola User</button>
+                    <button class="tab" onclick="showTab('settings')">Pengaturan</button>
+                </div>
+
+                <div id="allOrders" class="tab-content active">
+                    <h3>Semua Pesanan Turnitin</h3>
+                    <div id="adminOrdersLoading" class="loading">Memuat data...</div>
+                    <table class="table" id="adminOrdersTable" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>User</th>
+                                <th>Judul Dokumen</th>
+                                <th>Jenis</th>
+                                <th>Status Turnitin</th>
+                                <th>Status Pembayaran</th>
+                                <th>Total</th>
+                                <th>Tanggal</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminOrdersBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="users" class="tab-content">
+                    <h3>Manajemen User</h3>
+                    <div id="usersLoading" class="loading">Memuat data...</div>
+                    <table class="table" id="usersTable" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="settings" class="tab-content">
+                    <h3>Pengaturan Sistem</h3>
+                    <div class="form-group">
+                        <label for="pricePerPage">Harga per Halaman (Rp):</label>
+                        <input type="number" id="pricePerPage" value="5000">
+                    </div>
+                    <button class="btn" onclick="updateSettings()">Simpan Pengaturan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Order Details -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>Detail Pesanan</h3>
+            <div id="orderDetails"></div>
+            <div id="orderActions" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let currentRole = null;
+        let orders = [];
+        let users = [];
+        let settings = { pricePerPage: 5000 };
+
+        // Google Apps Script URL - Ganti dengan URL Web App Anda
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0CNHH3vvcO-qmE5_6S_D27RrCnlvvGPphVD8T8yiKiuz0AiqQd7ON5xTCzXmSKiNW/exec';
+
+        // Login function
+        async function login() {
+            const userType = document.getElementById('userType').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                showError('loginError', 'Username dan password harus diisi!');
+                return;
+            }
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'login',
+                        username: username,
+                        password: password,
+                        userType: userType
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    currentUser = result.user;
+                    currentRole = result.role;
+                    
+                    document.getElementById('currentUser').textContent = currentUser;
+                    document.getElementById('currentRole').textContent = currentRole;
+                    
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('dashboard').style.display = 'block';
+                    
+                    if (currentRole === 'admin') {
+                        document.getElementById('adminDashboard').style.display = 'block';
+                        loadAllOrders();
+                        loadUsers();
+                    } else {
+                        document.getElementById('userDashboard').style.display = 'block';
+                        loadUserOrders();
+                    }
+                } else {
+                    showError('loginError', result.message || 'Login gagal!');
+                }
+            } catch (error) {
+                showError('loginError', 'Terjadi kesalahan saat login!');
+                console.error('Login error:', error);
+            }
+        }
+
+        // Logout function
+        function logout() {
+            currentUser = null;
+            currentRole = null;
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('userDashboard').style.display = 'none';
+            document.getElementById('adminDashboard').style.display = 'none';
+            
+            // Reset forms
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('loginError').style.display = 'none';
+        }
+
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Load user orders
+        async function loadUserOrders() {
+            document.getElementById('userOrdersLoading').style.display = 'block';
+            document.getElementById('userOrdersTable').style.display = 'none';
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'getUserOrders',
+                        username: currentUser
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    orders = result.orders;
+                    displayUserOrders();
+                } else {
+                    console.error('Failed to load orders:', result.message);
+                }
+            } catch (error) {
+                console.error('Error loading orders:', error);
+            } finally {
+                document.getElementById('userOrdersLoading').style.display = 'none';
+                document.getElementById('userOrdersTable').style.display = 'table';
+            }
+        }
+
+        // Display user orders
+        function displayUserOrders() {
+            const tbody = document.getElementById('userOrdersBody');
+            tbody.innerHTML = '';
+
+            orders.forEach((order, index) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${order.documentTitle}</td>
+                    <td><span class="status ${order.turnitinStatus.toLowerCase()}">${order.turnitinStatus}</span></td>
+                    <td><span class="status ${order.paymentStatus.toLowerCase()}">${order.paymentStatus}</span></td>
+                    <td>Rp ${order.totalAmount.toLocaleString()}</td>
+                    <td>${new Date(order.createdDate).toLocaleDateString()}</td>
+                    <td><button class="btn" onclick="viewOrderDetails('${order.id}')">Detail</button></td>
+                `;
+            });
+        }
+
+        // Create new order
+        async function createOrder() {
+            const documentTitle = document.getElementById('documentTitle').value;
+            const documentType = document.getElementById('documentType').value;
+            const pageCount = parseInt(document.getElementById('pageCount').value);
+
+            if (!documentTitle || !pageCount) {
+                alert('Semua field harus diisi!');
+                return;
+            }
+
+            const totalAmount = pageCount * settings.pricePerPage;
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'createOrder',
+                        username: currentUser,
+                        documentTitle: documentTitle,
+                        documentType: documentType,
+                        pageCount: pageCount,
+                        totalAmount: totalAmount
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('orderSuccess').textContent = 'Pesanan berhasil dibuat!';
+                    document.getElementById('orderSuccess').style.display = 'block';
+                    
+                    // Reset form
+                    document.getElementById('documentTitle').value = '';
+                    document.getElementById('pageCount').value = '';
+                    
+                    // Refresh orders
+                    loadUserOrders();
+                } else {
+                    alert('Gagal membuat pesanan: ' + result.message);
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat membuat pesanan!');
+                console.error('Create order error:', error);
+            }
+        }
+
+        // Load all orders (admin)
+        async function loadAllOrders() {
+            document.getElementById('adminOrdersLoading').style.display = 'block';
+            document.getElementById('adminOrdersTable').style.display = 'none';
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'getAllOrders'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    orders = result.orders;
+                    displayAllOrders();
+                }
+            } catch (error) {
+                console.error('Error loading all orders:', error);
+            } finally {
+                document.getElementById('adminOrdersLoading').style.display = 'none';
+                document.getElementById('adminOrdersTable').style.display = 'table';
+            }
+        }
+
+        // Display all orders (admin)
+        function displayAllOrders() {
+            const tbody = document.getElementById('adminOrdersBody');
+            tbody.innerHTML = '';
+
+            orders.forEach((order, index) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${order.username}</td>
+                    <td>${order.documentTitle}</td>
+                    <td>${order.documentType}</td>
+                    <td><span class="status ${order.turnitinStatus.toLowerCase()}">${order.turnitinStatus}</span></td>
+                    <td><span class="status ${order.paymentStatus.toLowerCase()}">${order.paymentStatus}</span></td>
+                    <td>Rp ${order.totalAmount.toLocaleString()}</td>
+                    <td>${new Date(order.createdDate).toLocaleDateString()}</td>
+                    <td><button class="btn" onclick="viewOrderDetails('${order.id}')">Kelola</button></td>
+                `;
+            });
+        }
+
+        // Load users (admin)
+        async function loadUsers() {
+            document.getElementById('usersLoading').style.display = 'block';
+            document.getElementById('usersTable').style.display = 'none';
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'getUsers'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    users = result.users;
+                    displayUsers();
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            } finally {
+                document.getElementById('usersLoading').style.display = 'none';
+                document.getElementById('usersTable').style.display = 'table';
+            }
+        }
+
+        // Display users
+        function displayUsers() {
+            const tbody = document.getElementById('usersBody');
+            tbody.innerHTML = '';
+
+            users.forEach((user, index) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td><span class="status ${user.status.toLowerCase()}">${user.status}</span></td>
+                    <td><button class="btn btn-secondary" onclick="manageUser('${user.username}')">Kelola</button></td>
+                `;
+            });
+        }
+
+        // View order details
+        function viewOrderDetails(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+
+            const details = `
+                <p><strong>ID:</strong> ${order.id}</p>
+                <p><strong>User:</strong> ${order.username}</p>
+                <p><strong>Judul:</strong> ${order.documentTitle}</p>
+                <p><strong>Jenis:</strong> ${order.documentType}</p>
+                <p><strong>Jumlah Halaman:</strong> ${order.pageCount}</p>
+                <p><strong>Total Bayar:</strong> Rp ${order.totalAmount.toLocaleString()}</p>
+                <p><strong>Status Turnitin:</strong> ${order.turnitinStatus}</p>
+                <p><strong>Status Pembayaran:</strong> ${order.paymentStatus}</p>
+                <p><strong>Tanggal:</strong> ${new Date(order.createdDate).toLocaleDateString()}</p>
+            `;
+
+            document.getElementById('orderDetails').innerHTML = details;
+
+            let actions = '';
+            if (currentRole === 'admin') {
+                actions = `
+                    <button class="btn btn-success" onclick="updateOrderStatus('${orderId}', 'turnitin', 'completed')">Selesai Turnitin</button>
+                    <button class="btn btn-success" onclick="updateOrderStatus('${orderId}', 'payment', 'approved')">Approve Pembayaran</button>
+                    <button class="btn btn-danger" onclick="updateOrderStatus('${orderId}', 'payment', 'rejected')">Reject Pembayaran</button>
+                `;
+            }
+
+            document.getElementById('orderActions').innerHTML = actions;
+            document.getElementById('orderModal').style.display = 'block';
+        }
+
+        // Update order status
+        async function updateOrderStatus(orderId, statusType, newStatus) {
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'updateOrderStatus',
+                        orderId: orderId,
+                        statusType: statusType,
+                        newStatus: newStatus
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Status berhasil diupdate!');
+                    closeModal();
+                    loadAllOrders();
+                } else {
+                    alert('Gagal update status: ' + result.message);
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat update status!');
+                console.error('Update status error:', error);
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('orderModal').style.display = 'none';
+        }
+
+        // Show error message
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        // Update settings
+        async function updateSettings() {
+            const pricePerPage = parseInt(document.getElementById('pricePerPage').value);
+            
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'updateSettings',
+                        pricePerPage: pricePerPage
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    settings.pricePerPage = pricePerPage;
+                    alert('Pengaturan berhasil disimpan!');
+                } else {
+                    alert('Gagal menyimpan pengaturan: ' + result.message);
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat menyimpan pengaturan!');
+                console.error('Update settings error:', error);
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('orderModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
