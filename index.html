@@ -121,7 +121,7 @@
     <div id="delete-bar" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-white px-6 py-3 rounded-full shadow-2xl shadow-red-200 z-[50] transition-all duration-300 translate-y-32 flex items-center gap-4 border border-red-100">
         <span class="text-sm font-bold text-gray-700"><span id="selected-count">0</span> Dipilih</span>
         <div class="h-4 w-px bg-gray-300"></div>
-        <button onclick="deleteSelectedItems()" class="text-red-600 font-bold text-sm flex items-center gap-2 active:scale-95 transition">
+        <button id="btn-confirm-delete" onclick="deleteSelectedItems()" class="text-red-600 font-bold text-sm flex items-center gap-2 active:scale-95 transition">
             <i class="fas fa-trash-alt"></i> Hapus
         </button>
     </div>
@@ -136,7 +136,7 @@
                     <i class="fas fa-wallet text-4xl text-primary -rotate-3"></i>
                 </div>
                 <div class="absolute -bottom-2 -right-2 bg-green-100 text-green-600 text-xs font-bold px-2 py-1 rounded-lg border-2 border-white">
-                    v2.3
+                    v3.0
                 </div>
             </div>
 
@@ -174,13 +174,6 @@
                     <i class="fas fa-arrow-right text-sm opacity-70"></i>
                 </button>
             </form>
-
-            <div class="mt-8 text-center">
-                <button onclick="alert('Fitur Biometrik akan tersedia di versi Native')" class="p-4 rounded-full bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-primary transition active:scale-95">
-                    <i class="fas fa-fingerprint text-3xl"></i>
-                </button>
-                <p class="text-[10px] text-gray-400 mt-2">Sentuh untuk login cepat</p>
-            </div>
         </div>
     </section>
 
@@ -374,7 +367,8 @@
 
     <script>
         // ================= CONFIGURATION =================
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwuNMfGNSn-73ZUiCcGl1v8lRTSZFkYeBvUTQjfMlLzhIfKzLql1cqKv1mW8NmCmZ0/exec"; 
+        // PASTE URL BARU DARI GOOGLE SCRIPT ANDA DI SINI
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwrBm4G8oF5rc0Cyyz29DI-iefajXlb6OPWTTYpBebPYjNyH_yzrKXFvE3nfoiYr__W/exec"; 
         // =================================================
 
         let rawData = [];
@@ -496,6 +490,7 @@
                     if(manual) showToast('Gagal memuat data', 'error');
                 }
             } catch (error) {
+                console.error(error);
                 if (rawData.length > 0) {
                     const ind = document.getElementById('offline-indicator');
                     if(ind) ind.classList.remove('hidden');
@@ -520,11 +515,14 @@
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
             
-            // Generate temp ID for optimistic UI
-            data.id = 'temp-' + Date.now();
+            // Generate ID di sisi client (Opsional, lebih aman di server tapi untuk sinkronisasi cepat ok)
+            // Namun script GS di atas generate ID jika kosong. Kita biarkan server handle ID permanen.
+            // data.id = 'temp-' + Date.now(); 
+            
             data.status = (data.tipe === 'Hutang') ? 'Belum Lunas' : '-';
 
             try {
+                // Post data
                 const response = await fetch(`${WEB_APP_URL}?action=create`, {
                     method: 'POST',
                     body: JSON.stringify(data)
@@ -536,7 +534,7 @@
                     closeModal();
                     e.target.reset();
                     document.querySelector('input[name="tanggal"]').value = new Date().toISOString().split('T')[0];
-                    fetchData(true); 
+                    fetchData(true); // Reload data dari server
                 } else {
                     throw new Error(result.message);
                 }
@@ -563,6 +561,8 @@
                 if (result.status === 'success') {
                     showToast('Lunas!', 'success');
                     fetchData(true);
+                } else {
+                    throw new Error(result.message);
                 }
             } catch (error) {
                 showToast('Gagal update', 'error');
@@ -603,17 +603,7 @@
                 selectedIds.add(id);
             }
             
-            // Re-render just the checkbox visually if performance needed, but simpler to rerender list or toggle class
-            const checkbox = document.getElementById(`check-${id}`);
-            if (checkbox) checkbox.checked = selectedIds.has(id);
-            
-            // Update Visual Container
-            const container = document.getElementById(`container-${id}`);
-            if (container) {
-                if(selectedIds.has(id)) container.classList.add('bg-red-50', 'border-red-200');
-                else container.classList.remove('bg-red-50', 'border-red-200');
-            }
-
+            renderHistory(); // Re-render to show checkboxes state
             updateDeleteBar();
         }
 
@@ -631,7 +621,6 @@
         }
 
         function getVisibleIds() {
-            // Helper to get currently filtered IDs
             const filterValue = document.getElementById('month-filter').value;
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             let filteredData = rawData;
@@ -655,42 +644,42 @@
 
         async function deleteSelectedItems() {
             if (selectedIds.size === 0) return;
-            if (!confirm(`Hapus ${selectedIds.size} item yang dipilih secara permanen?`)) return;
+            if (!confirm(`Hapus ${selectedIds.size} item permanen dari database?`)) return;
 
             const idsToDelete = Array.from(selectedIds);
+            const btn = document.getElementById('btn-confirm-delete');
+            const originalContent = btn.innerHTML;
             
-            // 1. Optimistic UI Update (Remove locally first)
-            const originalData = [...rawData]; // Backup
-            rawData = rawData.filter(item => !selectedIds.has(item.id));
-            localStorage.setItem('dompetku_data', JSON.stringify(rawData));
-            
-            toggleEditMode(); // Exit edit mode
-            showToast('Menghapus...', 'success');
+            // UI Feedback
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Proses...';
+            btn.disabled = true;
 
-            // 2. Send to Backend
             try {
-                // Assuming the Google Script accepts 'action=delete' and a JSON body with 'ids'
-                // If your current script doesn't support batch delete, it will just update local.
-                // You should update your GAS to handle: if(action=='delete') { deleteRowsByIds(data.ids) }
-                
+                // 1. Send to Backend
                 const response = await fetch(`${WEB_APP_URL}?action=delete`, {
                     method: 'POST',
                     body: JSON.stringify({ ids: idsToDelete })
                 });
                 
-                // If backend doesn't support delete, we might get an error or HTML back
-                // For safety in this demo, we assume success if no error thrown
-                
-                /* NOTE: Jika Script Google belum diupdate untuk handle 'delete', 
-                   data akan muncul lagi saat refresh. Pastikan update GAS Anda.
-                */
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                     // 2. Jika sukses di server, update local UI
+                    rawData = rawData.filter(item => !selectedIds.has(item.id));
+                    localStorage.setItem('dompetku_data', JSON.stringify(rawData));
+                    
+                    showToast('Data berhasil dihapus', 'success');
+                    toggleEditMode(); // Exit edit mode
+                } else {
+                    throw new Error(result.message || 'Gagal menghapus');
+                }
 
             } catch (error) {
-                console.error("Delete failed on server", error);
-                // Optional: Revert data if strict consistency needed
-                // rawData = originalData;
-                // renderHistory();
-                showToast('Gagal hapus di server (Offline?)', 'error');
+                console.error("Delete failed", error);
+                showToast('Gagal hapus: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
             }
         }
 
@@ -750,7 +739,6 @@
                 return;
             }
 
-            // MODIFIED RENDER LOGIC
             container.innerHTML = filteredData.map(item => {
                 const isExpense = item.tipe === 'Keluar' || item.tipe === 'Hutang';
                 const colorClass = isExpense ? 'text-red-600' : 'text-green-600';
@@ -759,7 +747,6 @@
                 const isSelected = selectedIds.has(item.id);
                 const selectStyle = isSelected ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100';
                 
-                // Selection Wrapper
                 let leftContent = ``;
                 if (isEditMode) {
                     leftContent = `
@@ -793,8 +780,6 @@
             let debts = data.filter(item => item.tipe === 'Hutang');
             if(search) debts = debts.filter(item => item.keterangan.toLowerCase().includes(search));
 
-            // Note: I did not add Edit Mode to Debt List to keep it simple, 
-            // but it can be added similarly if needed. currently Edit Mode only affects Dashboard.
             if (debts.length === 0) {
                 container.innerHTML = `<div class="text-center py-10 text-gray-400">Tidak ada hutang.</div>`;
                 return;
