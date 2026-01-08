@@ -32,11 +32,13 @@
                     },
                     animation: {
                         'fade-in': 'fadeIn 0.3s ease-out',
-                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'bounce-in': 'bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                     },
                     keyframes: {
                         fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }
+                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+                        bounceIn: { '0%': { transform: 'scale(0.8)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } }
                     }
                 }
             }
@@ -64,6 +66,39 @@
         }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
         
+        /* Checkbox Custom Style */
+        .custom-checkbox {
+            appearance: none;
+            background-color: #fff;
+            margin: 0;
+            font: inherit;
+            color: currentColor;
+            width: 1.25em;
+            height: 1.25em;
+            border: 2px solid #cbd5e1;
+            border-radius: 0.35em;
+            display: grid;
+            place-content: center;
+            transition: all 0.2s ease-in-out;
+        }
+        .custom-checkbox::before {
+            content: "";
+            width: 0.65em;
+            height: 0.65em;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em white;
+            transform-origin: center;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        }
+        .custom-checkbox:checked {
+            background-color: #EF4444;
+            border-color: #EF4444;
+        }
+        .custom-checkbox:checked::before {
+            transform: scale(1);
+        }
+
         /* Custom Input for Login */
         .login-input:focus ~ label,
         .login-input:not(:placeholder-shown) ~ label {
@@ -82,6 +117,15 @@
         <span id="toast-message" class="text-sm font-medium truncate">Berhasil</span>
     </div>
 
+    <!-- Delete Floating Action Bar -->
+    <div id="delete-bar" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-white px-6 py-3 rounded-full shadow-2xl shadow-red-200 z-[50] transition-all duration-300 translate-y-32 flex items-center gap-4 border border-red-100">
+        <span class="text-sm font-bold text-gray-700"><span id="selected-count">0</span> Dipilih</span>
+        <div class="h-4 w-px bg-gray-300"></div>
+        <button onclick="deleteSelectedItems()" class="text-red-600 font-bold text-sm flex items-center gap-2 active:scale-95 transition">
+            <i class="fas fa-trash-alt"></i> Hapus
+        </button>
+    </div>
+
     <!-- ================== LOGIN VIEW ================== -->
     <section id="login-view" class="h-full w-full flex flex-col items-center justify-center p-6 bg-white absolute inset-0 z-50">
         
@@ -92,7 +136,7 @@
                     <i class="fas fa-wallet text-4xl text-primary -rotate-3"></i>
                 </div>
                 <div class="absolute -bottom-2 -right-2 bg-green-100 text-green-600 text-xs font-bold px-2 py-1 rounded-lg border-2 border-white">
-                    v2.2
+                    v2.3
                 </div>
             </div>
 
@@ -198,21 +242,30 @@
                     </div>
                 </div>
 
-                <!-- Search & Filter -->
+                <!-- Search & Filter & Edit Toggle -->
                 <div class="mb-4 sticky top-0 bg-surface/95 backdrop-blur py-2 z-10 space-y-3">
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 items-center">
                         <div class="relative flex-1">
                             <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
                             <input type="text" id="search-input" onkeyup="renderHistory()" placeholder="Cari transaksi..." class="w-full bg-white border border-gray-200 rounded-full pl-9 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-shadow">
                         </div>
                         <div class="relative">
-                            <select id="month-filter" onchange="renderHistory()" class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm rounded-full pl-4 pr-8 py-2 outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm h-full">
+                            <select id="month-filter" onchange="renderHistory()" class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm rounded-full pl-4 pr-8 py-2 outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm h-full max-w-[100px] truncate">
                                 <!-- Populated by JS -->
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                                 <i class="fas fa-chevron-down text-xs"></i>
                             </div>
                         </div>
+                        <!-- NEW: Toggle Edit Mode Button -->
+                        <button onclick="toggleEditMode()" id="edit-mode-btn" class="bg-white border border-gray-200 text-gray-600 w-10 h-10 rounded-full shadow-sm hover:bg-gray-50 active:bg-gray-200 transition flex items-center justify-center shrink-0">
+                            <i class="fas fa-pen text-sm"></i>
+                        </button>
+                    </div>
+                    <!-- Select All Helper (Hidden by default) -->
+                    <div id="edit-helper" class="hidden flex justify-between items-center px-2 text-xs text-gray-500 animate-fade-in">
+                        <span>Pilih item untuk dihapus</span>
+                        <button onclick="toggleSelectAll()" class="text-primary font-bold">Pilih Semua</button>
                     </div>
                 </div>
 
@@ -242,8 +295,8 @@
 
         </main>
 
-        <!-- FAB -->
-        <button onclick="openModal()" class="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,20px))] right-5 bg-gray-900 text-white w-14 h-14 rounded-full shadow-2xl shadow-gray-900/40 flex items-center justify-center text-2xl active:scale-90 transition-transform duration-200 z-30 touch-manipulation">
+        <!-- FAB (Main Add Button) - Hidden in Edit Mode -->
+        <button id="main-fab" onclick="openModal()" class="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,20px))] right-5 bg-gray-900 text-white w-14 h-14 rounded-full shadow-2xl shadow-gray-900/40 flex items-center justify-center text-2xl active:scale-90 transition-all duration-200 z-30 touch-manipulation">
             <i class="fas fa-plus"></i>
         </button>
 
@@ -327,6 +380,11 @@
         let rawData = [];
         let pieChart = null;
         let barChart = null;
+        
+        // --- NEW VARIABLES FOR EDIT MODE ---
+        let isEditMode = false;
+        let selectedIds = new Set();
+        // -----------------------------------
 
         // --- Auth Logic ---
         
@@ -462,6 +520,8 @@
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
             
+            // Generate temp ID for optimistic UI
+            data.id = 'temp-' + Date.now();
             data.status = (data.tipe === 'Hutang') ? 'Belum Lunas' : '-';
 
             try {
@@ -510,6 +570,130 @@
             }
         }
 
+        // --- NEW: DELETE LOGIC ---
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const btn = document.getElementById('edit-mode-btn');
+            const fab = document.getElementById('main-fab');
+            const helper = document.getElementById('edit-helper');
+            
+            if (isEditMode) {
+                btn.classList.add('bg-red-50', 'text-red-600', 'border-red-200');
+                btn.innerHTML = '<i class="fas fa-times"></i>';
+                fab.classList.add('scale-0'); // Hide FAB
+                helper.classList.remove('hidden');
+            } else {
+                btn.classList.remove('bg-red-50', 'text-red-600', 'border-red-200');
+                btn.innerHTML = '<i class="fas fa-pen text-sm"></i>';
+                fab.classList.remove('scale-0'); // Show FAB
+                helper.classList.add('hidden');
+                selectedIds.clear();
+                updateDeleteBar();
+            }
+            renderHistory();
+        }
+
+        function toggleSelection(id) {
+            if (!isEditMode) return;
+            
+            if (selectedIds.has(id)) {
+                selectedIds.delete(id);
+            } else {
+                selectedIds.add(id);
+            }
+            
+            // Re-render just the checkbox visually if performance needed, but simpler to rerender list or toggle class
+            const checkbox = document.getElementById(`check-${id}`);
+            if (checkbox) checkbox.checked = selectedIds.has(id);
+            
+            // Update Visual Container
+            const container = document.getElementById(`container-${id}`);
+            if (container) {
+                if(selectedIds.has(id)) container.classList.add('bg-red-50', 'border-red-200');
+                else container.classList.remove('bg-red-50', 'border-red-200');
+            }
+
+            updateDeleteBar();
+        }
+
+        function toggleSelectAll() {
+            const visibleIds = getVisibleIds();
+            const allSelected = visibleIds.every(id => selectedIds.has(id));
+
+            if (allSelected) {
+                visibleIds.forEach(id => selectedIds.delete(id));
+            } else {
+                visibleIds.forEach(id => selectedIds.add(id));
+            }
+            renderHistory();
+            updateDeleteBar();
+        }
+
+        function getVisibleIds() {
+            // Helper to get currently filtered IDs
+            const filterValue = document.getElementById('month-filter').value;
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            let filteredData = rawData;
+            if (filterValue) filteredData = filteredData.filter(item => item.tanggal.startsWith(filterValue));
+            if (searchTerm) filteredData = filteredData.filter(item => item.keterangan.toLowerCase().includes(searchTerm) || item.jumlah.toString().includes(searchTerm));
+            return filteredData.map(item => item.id);
+        }
+
+        function updateDeleteBar() {
+            const bar = document.getElementById('delete-bar');
+            const count = document.getElementById('selected-count');
+            
+            count.innerText = selectedIds.size;
+            
+            if (selectedIds.size > 0) {
+                bar.classList.remove('translate-y-32');
+            } else {
+                bar.classList.add('translate-y-32');
+            }
+        }
+
+        async function deleteSelectedItems() {
+            if (selectedIds.size === 0) return;
+            if (!confirm(`Hapus ${selectedIds.size} item yang dipilih secara permanen?`)) return;
+
+            const idsToDelete = Array.from(selectedIds);
+            
+            // 1. Optimistic UI Update (Remove locally first)
+            const originalData = [...rawData]; // Backup
+            rawData = rawData.filter(item => !selectedIds.has(item.id));
+            localStorage.setItem('dompetku_data', JSON.stringify(rawData));
+            
+            toggleEditMode(); // Exit edit mode
+            showToast('Menghapus...', 'success');
+
+            // 2. Send to Backend
+            try {
+                // Assuming the Google Script accepts 'action=delete' and a JSON body with 'ids'
+                // If your current script doesn't support batch delete, it will just update local.
+                // You should update your GAS to handle: if(action=='delete') { deleteRowsByIds(data.ids) }
+                
+                const response = await fetch(`${WEB_APP_URL}?action=delete`, {
+                    method: 'POST',
+                    body: JSON.stringify({ ids: idsToDelete })
+                });
+                
+                // If backend doesn't support delete, we might get an error or HTML back
+                // For safety in this demo, we assume success if no error thrown
+                
+                /* NOTE: Jika Script Google belum diupdate untuk handle 'delete', 
+                   data akan muncul lagi saat refresh. Pastikan update GAS Anda.
+                */
+
+            } catch (error) {
+                console.error("Delete failed on server", error);
+                // Optional: Revert data if strict consistency needed
+                // rawData = originalData;
+                // renderHistory();
+                showToast('Gagal hapus di server (Offline?)', 'error');
+            }
+        }
+
         // --- Render UI ---
 
         function populateMonthFilter() {
@@ -540,6 +724,7 @@
             if (filterValue) filteredData = filteredData.filter(item => item.tanggal.startsWith(filterValue));
             if (searchTerm) filteredData = filteredData.filter(item => item.keterangan.toLowerCase().includes(searchTerm) || item.jumlah.toString().includes(searchTerm));
 
+            // Calc totals
             let income = 0, expense = 0;
             filteredData.forEach(item => {
                 const val = parseInt(item.jumlah);
@@ -565,20 +750,40 @@
                 return;
             }
 
+            // MODIFIED RENDER LOGIC
             container.innerHTML = filteredData.map(item => {
                 const isExpense = item.tipe === 'Keluar' || item.tipe === 'Hutang';
                 const colorClass = isExpense ? 'text-red-600' : 'text-green-600';
                 const iconBg = isExpense ? 'bg-red-50' : 'bg-green-50';
+                
+                const isSelected = selectedIds.has(item.id);
+                const selectStyle = isSelected ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100';
+                
+                // Selection Wrapper
+                let leftContent = ``;
+                if (isEditMode) {
+                    leftContent = `
+                    <div class="pr-3 pointer-events-none">
+                        <input type="checkbox" id="check-${item.id}" class="custom-checkbox text-red-500" ${isSelected ? 'checked' : ''}>
+                    </div>
+                    `;
+                }
+
                 return `
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between active:bg-gray-50 transition-colors">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full ${iconBg} flex items-center justify-center ${colorClass} shrink-0"><i class="${getIcon(item.tipe)}"></i></div>
+                <div id="container-${item.id}" onclick="isEditMode ? toggleSelection('${item.id}') : null" class="${selectStyle} p-4 rounded-xl shadow-sm border flex items-center justify-between active:bg-gray-50 transition-all duration-200 select-none cursor-pointer">
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        ${leftContent}
+                        <div class="w-10 h-10 rounded-full ${iconBg} flex items-center justify-center ${colorClass} shrink-0 transition-transform ${isEditMode ? 'scale-90' : ''}">
+                            <i class="${getIcon(item.tipe)}"></i>
+                        </div>
                         <div class="min-w-0">
                             <p class="font-bold text-gray-800 text-sm truncate">${item.keterangan}</p>
                             <p class="text-xs text-gray-400">${new Date(item.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} • ${item.tipe}</p>
                         </div>
                     </div>
-                    <div class="text-right shrink-0 ml-2"><p class="font-bold ${colorClass} text-sm">${isExpense ? '-' : '+'} ${formatRupiah(item.jumlah)}</p></div>
+                    <div class="text-right shrink-0 ml-2">
+                        <p class="font-bold ${colorClass} text-sm">${isExpense ? '-' : '+'} ${formatRupiah(item.jumlah)}</p>
+                    </div>
                 </div>`;
             }).join('');
         }
@@ -588,6 +793,8 @@
             let debts = data.filter(item => item.tipe === 'Hutang');
             if(search) debts = debts.filter(item => item.keterangan.toLowerCase().includes(search));
 
+            // Note: I did not add Edit Mode to Debt List to keep it simple, 
+            // but it can be added similarly if needed. currently Edit Mode only affects Dashboard.
             if (debts.length === 0) {
                 container.innerHTML = `<div class="text-center py-10 text-gray-400">Tidak ada hutang.</div>`;
                 return;
@@ -691,7 +898,10 @@
             });
             document.getElementById('view-dashboard').classList.toggle('hidden', target === 'laporan');
             document.getElementById('view-report').classList.toggle('hidden', target !== 'laporan');
-            renderHistory();
+            
+            // Turn off edit mode when switching tabs
+            if (isEditMode) toggleEditMode();
+            else renderHistory();
         }
 
         document.getElementById('modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
