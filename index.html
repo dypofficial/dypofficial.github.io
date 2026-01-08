@@ -136,7 +136,7 @@
                     <i class="fas fa-wallet text-4xl text-primary -rotate-3"></i>
                 </div>
                 <div class="absolute -bottom-2 -right-2 bg-green-100 text-green-600 text-xs font-bold px-2 py-1 rounded-lg border-2 border-white">
-                    v3.0
+                    v3.1
                 </div>
             </div>
 
@@ -368,7 +368,7 @@
     <script>
         // ================= CONFIGURATION =================
         // PASTE URL BARU DARI GOOGLE SCRIPT ANDA DI SINI
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwrBm4G8oF5rc0Cyyz29DI-iefajXlb6OPWTTYpBebPYjNyH_yzrKXFvE3nfoiYr__W/exec"; 
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzkVDFQGadQlKCE79pAv9pNu_ROuzNOu8AV1k0tvqvEzGI7xibMSHtIPo9KK9ePrrDv/exec"; 
         // =================================================
 
         let rawData = [];
@@ -515,10 +515,6 @@
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
             
-            // Generate ID di sisi client (Opsional, lebih aman di server tapi untuk sinkronisasi cepat ok)
-            // Namun script GS di atas generate ID jika kosong. Kita biarkan server handle ID permanen.
-            // data.id = 'temp-' + Date.now(); 
-            
             data.status = (data.tipe === 'Hutang') ? 'Belum Lunas' : '-';
 
             try {
@@ -570,7 +566,7 @@
             }
         }
 
-        // --- NEW: DELETE LOGIC ---
+        // --- NEW: DELETE LOGIC (IMPROVED) ---
 
         function toggleEditMode() {
             isEditMode = !isEditMode;
@@ -644,18 +640,24 @@
 
         async function deleteSelectedItems() {
             if (selectedIds.size === 0) return;
-            if (!confirm(`Hapus ${selectedIds.size} item permanen dari database?`)) return;
+            
+            // Konfirmasi sederhana namun jelas
+            if (!confirm(`Yakin ingin menghapus ${selectedIds.size} item ini?`)) return;
 
             const idsToDelete = Array.from(selectedIds);
-            const btn = document.getElementById('btn-confirm-delete');
-            const originalContent = btn.innerHTML;
+            const originalData = [...rawData]; // Simpan cadangan untuk rollback
             
-            // UI Feedback
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Proses...';
-            btn.disabled = true;
+            // 1. Optimistic Update (Hapus di layar dulu biar cepat)
+            // Ini membuat interaksi terasa instan bagi user
+            rawData = rawData.filter(item => !selectedIds.has(item.id));
+            localStorage.setItem('dompetku_data', JSON.stringify(rawData));
+            
+            // Update UI seolah-olah sudah sukses
+            toggleEditMode(); // Keluar mode edit otomatis agar rapi
+            showToast('Menghapus...', 'success');
 
+            // 2. Kirim ke Backend (Background Process)
             try {
-                // 1. Send to Backend
                 const response = await fetch(`${WEB_APP_URL}?action=delete`, {
                     method: 'POST',
                     body: JSON.stringify({ ids: idsToDelete })
@@ -664,22 +666,19 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                     // 2. Jika sukses di server, update local UI
-                    rawData = rawData.filter(item => !selectedIds.has(item.id));
-                    localStorage.setItem('dompetku_data', JSON.stringify(rawData));
-                    
-                    showToast('Data berhasil dihapus', 'success');
-                    toggleEditMode(); // Exit edit mode
+                    // Sukses di server, sinkronisasi selesai
+                    console.log('Sync delete success');
                 } else {
-                    throw new Error(result.message || 'Gagal menghapus');
+                    throw new Error(result.message || 'Gagal menghapus di server');
                 }
 
             } catch (error) {
                 console.error("Delete failed", error);
-                showToast('Gagal hapus: ' + error.message, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalContent;
+                // 3. Rollback jika gagal (Kembalikan data ke kondisi semula)
+                rawData = originalData;
+                localStorage.setItem('dompetku_data', JSON.stringify(rawData));
+                renderHistory(); // Render ulang data lama
+                showToast('Gagal! Data dikembalikan.', 'error');
             }
         }
 
