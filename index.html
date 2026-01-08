@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Keuangan Modern</title>
-    
+    <!-- Favicon Bertema Uang (Emoji 💰) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
     <!-- Font Awesome untuk Ikon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js untuk Grafik -->
@@ -61,6 +62,18 @@
         .bg-debt { background-color: var(--warning); }
         .bg-other { background-color: var(--info); }
 
+        /* FILTER & SUMMARY CARD */
+        .filter-card { margin: 0 20px 20px 20px; background: var(--bg-card); padding: 15px; border-radius: var(--radius); box-shadow: var(--shadow); }
+        .filter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .month-picker { border: 1px solid #E2E8F0; padding: 8px 12px; border-radius: 8px; font-family: inherit; color: var(--text-main); outline: none; background: #F8FAFC; cursor: pointer; }
+        .month-picker:focus { border-color: var(--primary); }
+        
+        .month-summary { display: flex; justify-content: space-between; font-size: 0.9rem; }
+        .ms-item { flex: 1; }
+        .ms-item.right { text-align: right; }
+        .ms-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2px; }
+        .ms-value { font-weight: 700; }
+
         /* HISTORY & CONTENT */
         .section-title { padding: 0 20px; font-size: 1.1rem; font-weight: 700; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         .history-list { padding: 0 20px; display: flex; flex-direction: column; gap: 12px; }
@@ -116,18 +129,9 @@
             </div>
             
             <div class="balance-card">
-                <div class="balance-label">Total Saldo</div>
+                <div class="balance-label">Total Saldo (Semua Waktu)</div>
                 <div class="balance-amount" id="displayBalance">Rp 0</div>
-                <div class="balance-stats">
-                    <div class="stat-item">
-                        <h4>Pemasukan</h4>
-                        <p id="displayIncome">Rp 0</p>
-                    </div>
-                    <div class="stat-item" style="text-align: right;">
-                        <h4>Pengeluaran</h4>
-                        <p id="displayExpense">Rp 0</p>
-                    </div>
-                </div>
+                <!-- Statistik di sini dihapus, dipindah ke filter bulanan agar lebih relevan -->
             </div>
         </header>
 
@@ -151,17 +155,34 @@
             </button>
         </div>
 
-        <!-- GRAFIK -->
+        <!-- FILTER & RINGKASAN BULANAN -->
         <div class="section-title">
-            <span>Ringkasan</span>
+            <span>Filter & Statistik</span>
         </div>
+        <div class="filter-card">
+            <div class="filter-header">
+                <input type="month" id="monthFilter" class="month-picker" onchange="renderData()">
+            </div>
+            <div class="month-summary">
+                <div class="ms-item">
+                    <div class="ms-label">Pemasukan Bulan Ini</div>
+                    <div class="ms-value text-green" id="monthIn">Rp 0</div>
+                </div>
+                <div class="ms-item right">
+                    <div class="ms-label">Pengeluaran Bulan Ini</div>
+                    <div class="ms-value text-red" id="monthOut">Rp 0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRAFIK -->
         <div class="chart-container">
             <canvas id="financeChart"></canvas>
         </div>
 
         <!-- RIWAYAT TRANSAKSI -->
         <div class="section-title">
-            <span>Riwayat Terakhir</span>
+            <span>Riwayat Transaksi</span>
             <span style="font-size: 0.8rem; color: var(--primary); cursor: pointer;" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh</span>
         </div>
         
@@ -232,6 +253,12 @@
         // --- CORE FUNCTIONS ---
 
         function init() {
+            // Set default filter ke bulan saat ini (YYYY-MM)
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            document.getElementById('monthFilter').value = `${year}-${month}`;
+
             if (GOOGLE_SCRIPT_URL === "") {
                 document.getElementById('connectionStatus').textContent = "Demo Mode";
                 loadLocalData();
@@ -275,38 +302,56 @@
             const historyList = document.getElementById('historyList');
             historyList.innerHTML = '';
             
-            let totalIncome = 0;
-            let totalExpense = 0;
-            let balance = 0;
+            // Ambil filter bulan
+            const filterValue = document.getElementById('monthFilter').value; // format YYYY-MM
+            
+            let globalBalance = 0;
+            let monthIncome = 0;
+            let monthExpense = 0;
+            
+            // 1. Hitung Saldo Global (Semua waktu)
+            transactions.forEach(item => {
+                const amount = parseFloat(item.amount);
+                if (item.type === 'Masuk') globalBalance += amount;
+                else if (item.type === 'Keluar' || item.type === 'Hutang') globalBalance -= amount;
+            });
+            document.getElementById('displayBalance').textContent = formatRupiah(globalBalance);
 
-            // Sort by date (terbaru diatas)
-            const sortedData = [...transactions].reverse();
+            // 2. Filter data berdasarkan Bulan
+            const filteredData = transactions.filter(item => {
+                // Konversi tanggal DD/MM/YYYY ke YYYY-MM
+                if(!item.date) return false;
+                const parts = item.date.split('/'); // Asumsi format dd/mm/yyyy
+                if(parts.length !== 3) return false;
+                
+                const itemYearMonth = `${parts[2]}-${parts[1]}`; // YYYY-MM
+                return itemYearMonth === filterValue;
+            });
+
+            // 3. Render Data Filtered & Hitung Statistik Bulan Ini
+            // Sort by date (terbaru diatas, khusus bulan ini)
+            const sortedData = [...filteredData].reverse();
 
             if (sortedData.length === 0) {
                 historyList.innerHTML = `
                     <div class="empty-state">
-                        <i class="fas fa-folder-open" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
-                        <p>Belum ada data transaksi</p>
+                        <i class="fas fa-calendar-times" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                        <p>Tidak ada transaksi di bulan ini</p>
                     </div>`;
             }
 
             sortedData.forEach(item => {
                 const amount = parseFloat(item.amount);
-                const isIncome = item.type === 'Masuk' || item.type === 'Lainnya' && amount > 0; // Simplified logic
                 
-                // Kalkulasi Saldo
+                // Hitung Statistik Bulanan
                 if (item.type === 'Masuk') {
-                    totalIncome += amount;
-                    balance += amount;
+                    monthIncome += amount;
                 } else if (item.type === 'Keluar') {
-                    totalExpense += amount;
-                    balance -= amount;
+                    monthExpense += amount;
                 } else if (item.type === 'Hutang') {
-                    // Logika hutang: Uang masuk (pinjaman) atau uang keluar (bayar)?
-                    // Asumsi sederhana: Hutang dicatat sebagai pengeluaran/beban dulu atau bisa disesuaikan
-                    // Di sini saya anggap Hutang = Uang Masuk (Pinjam) tapi ditandai kuning
-                    // User logic bisa disesuaikan. Default: Keluar
-                     balance -= amount; 
+                     // Hutang dianggap beban/pengeluaran di statistik bulanan
+                     // Atau bisa dipisah jika ingin. Di sini digabung ke expense visual chart.
+                     monthExpense += amount; 
                 }
 
                 // Render Item HTML
@@ -337,12 +382,11 @@
                 historyList.appendChild(div);
             });
 
-            // Update UI Saldo
-            document.getElementById('displayBalance').textContent = formatRupiah(balance);
-            document.getElementById('displayIncome').textContent = formatRupiah(totalIncome);
-            document.getElementById('displayExpense').textContent = formatRupiah(totalExpense);
+            // Update UI Statistik Bulanan
+            document.getElementById('monthIn').textContent = formatRupiah(monthIncome);
+            document.getElementById('monthOut').textContent = formatRupiah(monthExpense);
             
-            updateChart(totalIncome, totalExpense);
+            updateChart(monthIncome, monthExpense);
         }
 
         // --- DATA HANDLERS (DEMO & API) ---
@@ -387,8 +431,15 @@
             btnText.textContent = "Menyimpan...";
             loader.classList.remove('hidden');
 
+            // PENTING: Format tanggal harus dd/mm/yyyy agar konsisten dengan parser di renderData
+            const today = new Date();
+            const dd = String(today.getDate()).padStart(2, '0');
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const yyyy = today.getFullYear();
+            const formattedDate = `${dd}/${mm}/${yyyy}`;
+
             const data = {
-                date: new Date().toLocaleDateString('id-ID'), // Format sederhana
+                date: formattedDate,
                 type: document.getElementById('inputType').value,
                 amount: document.getElementById('inputAmount').value,
                 category: document.getElementById('inputCategory').value,
@@ -405,22 +456,17 @@
             } else {
                 // KIRIM KE GOOGLE SHEET
                 try {
-                    // Gunakan mode 'no-cors' untuk simplifikasi atau format text/plain hack untuk GAS
                     const response = await fetch(GOOGLE_SCRIPT_URL, {
                         method: 'POST',
                         body: JSON.stringify(data)
                     });
                     
-                    // Karena keterbatasan CORS GAS kadang return opaque response
-                    // Kita asumsikan sukses jika fetch tidak error atau handle json
                     const result = await response.json(); 
-                    
                     finishSubmit(true);
                     fetchDataFromSheet(); // Reload data
                 } catch (error) {
                     console.error("Error:", error);
-                    // Fallback untuk CORS error yang sering terjadi di GAS padahal data masuk
-                    finishSubmit(true); // Asumsi masuk, user refresh nanti
+                    finishSubmit(true);
                     showToast("Cek koneksi internet", true); 
                 }
             }
@@ -455,34 +501,36 @@
         function initChart() {
             const ctx = document.getElementById('financeChart').getContext('2d');
             myChart = new Chart(ctx, {
-                type: 'bar',
+                type: 'doughnut', // Ganti ke doughnut agar lebih modern untuk stat bulanan
                 data: {
                     labels: ['Pemasukan', 'Pengeluaran'],
                     datasets: [{
-                        label: 'Ringkasan',
                         data: [0, 0],
                         backgroundColor: [
-                            'rgba(16, 185, 129, 0.7)',
-                            'rgba(239, 68, 68, 0.7)'
+                            '#10B981', // Green
+                            '#EF4444'  // Red
                         ],
-                        borderColor: [
-                            'rgba(16, 185, 129, 1)',
-                            'rgba(239, 68, 68, 1)'
-                        ],
-                        borderWidth: 1,
-                        borderRadius: 5
+                        borderWidth: 0,
+                        hoverOffset: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false }
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) { label += ': '; }
+                                    label += new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(context.raw);
+                                    return label;
+                                }
+                            }
+                        }
                     },
-                    scales: {
-                        y: { beginAtZero: true, display: false },
-                        x: { grid: { display: false } }
-                    }
+                    cutout: '70%', // Membuat lubang tengah lebih besar
                 }
             });
         }
