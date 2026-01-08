@@ -246,7 +246,7 @@
     <div id="toast" class="toast">Berhasil disimpan</div>
 
     <script>
-        const GOOGLE_SCRIPT_URL = ""; 
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxX6XpptFEW32cfhoK_KSP0sDVe0uTQ8gQIqsFY9n60verz0uXmADRuUUSAsRB4ogE4/exec"; 
         
         // State Management
         let transactions = [];
@@ -544,7 +544,7 @@
         }
 
         function refreshData() {
-            if (GOOGLE_SCRIPT_URL === "") {
+            if (GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbxX6XpptFEW32cfhoK_KSP0sDVe0uTQ8gQIqsFY9n60verz0uXmADRuUUSAsRB4ogE4/exec") {
                 showToast("Mode Demo: Data lokal dimuat ulang");
                 loadLocalData();
             } else {
