@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <!-- Mengatur warna status bar browser Android agar menyatu dengan header -->
     <meta name="theme-color" content="#ffffff">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Sistem Keuangan Modern</title>
-    <!-- Favicon Bertema Uang (Emoji 💰) -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
+    <title>Dompet Modern</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script>
         tailwind.config = {
@@ -26,33 +25,35 @@
                     },
                     colors: {
                         primary: '#4F46E5',
+                        primaryDark: '#4338ca',
                         secondary: '#10B981',
                         danger: '#EF4444',
-                        warning: '#F59E0B',
-                        surface: '#F3F4F6'
+                        surface: '#F9FAFB'
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Mencegah highlight biru saat tap di Android */
         body { 
             -webkit-tap-highlight-color: transparent;
-            /* Mencegah pull-to-refresh browser yang mengganggu UX aplikasi */
             overscroll-behavior-y: none;
         }
-        
-        /* Custom Scrollbar hiding */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
         .glass {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
         }
-        
         .loader {
             border: 3px solid #f3f3f3;
             border-top: 3px solid #4F46E5;
@@ -61,139 +62,222 @@
             height: 24px;
             animation: spin 1s linear infinite;
         }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
         
-        /* Safe Area untuk Gesture Navigation Bar di Android/iPhone terbaru */
-        .pb-safe {
-            padding-bottom: env(safe-area-inset-bottom, 20px);
+        /* Custom Input for Login */
+        .login-input:focus ~ label,
+        .login-input:not(:placeholder-shown) ~ label {
+            transform: translateY(-1.5rem) scale(0.85);
+            color: #4F46E5;
         }
         
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<!-- Menggunakan h-[100dvh] untuk menangani address bar browser mobile yang dinamis -->
-<body class="bg-surface text-gray-800 font-sans h-[100dvh] w-full flex flex-col overflow-hidden text-base">
+<body class="bg-surface text-gray-800 font-sans h-[100dvh] w-full overflow-hidden text-base">
 
     <!-- Notification Toast -->
     <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-xl z-[60] transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-3 w-max max-w-[90%]">
         <i id="toast-icon" class="fas fa-check-circle text-green-400"></i>
-        <span id="toast-message" class="text-sm font-medium truncate">Berhasil disimpan</span>
+        <span id="toast-message" class="text-sm font-medium truncate">Berhasil</span>
     </div>
 
-    <!-- Header -->
-    <header class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm z-10 shrink-0">
-        <div>
-            <h1 class="text-xl font-bold text-gray-900 tracking-tight">DompetKu</h1>
-            <p class="text-xs text-gray-500" id="current-date">Memuat tanggal...</p>
-        </div>
-        <button onclick="fetchData()" class="p-3 -mr-2 rounded-full hover:bg-gray-100 active:bg-gray-200 transition relative touch-manipulation">
-            <i class="fas fa-sync-alt text-gray-600 text-lg" id="refresh-icon"></i>
-        </button>
-    </header>
-
-    <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto no-scrollbar relative p-4 pb-32 w-full" id="main-container">
+    <!-- ================== LOGIN VIEW ================== -->
+    <section id="login-view" class="h-full w-full flex flex-col items-center justify-center p-6 bg-white absolute inset-0 z-50">
         
-        <!-- Summary Cards -->
-        <div class="grid grid-cols-1 gap-4 mb-6">
-            <!-- Balance -->
-            <div class="bg-gradient-to-r from-indigo-600 to-blue-500 rounded-2xl p-5 text-white shadow-lg shadow-indigo-200 relative overflow-hidden">
-                <div class="absolute right-0 top-0 opacity-10 transform translate-x-4 -translate-y-4">
-                    <i class="fas fa-wallet text-9xl"></i>
+        <div class="w-full max-w-sm flex flex-col items-center animate-slide-up">
+            <!-- Logo Area -->
+            <div class="mb-8 relative">
+                <div class="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center rotate-3">
+                    <i class="fas fa-wallet text-4xl text-primary -rotate-3"></i>
                 </div>
-                <p class="text-indigo-100 text-sm font-medium mb-1 relative z-10">Saldo Saat Ini</p>
-                <h2 class="text-4xl font-bold tracking-tight relative z-10" id="total-balance">Rp 0</h2>
+                <div class="absolute -bottom-2 -right-2 bg-green-100 text-green-600 text-xs font-bold px-2 py-1 rounded-lg border-2 border-white">
+                    v2.2
+                </div>
             </div>
+
+            <div class="text-center mb-10">
+                <h1 class="text-2xl font-bold text-gray-900 mb-2">Selamat Datang</h1>
+                <p class="text-gray-500 text-sm">Masuk untuk mengelola keuanganmu.</p>
+            </div>
+
+            <!-- Login Form -->
+            <form onsubmit="handleLogin(event)" class="w-full space-y-6">
+                
+                <div class="relative">
+                    <input type="email" id="email" class="login-input peer w-full border-b-2 border-gray-200 py-3 text-gray-900 placeholder-transparent focus:border-primary focus:outline-none transition-colors bg-transparent" placeholder="Email" autocomplete="email" required value="admin@uangku.com">
+                    <label for="email" class="absolute left-0 -top-3.5 text-gray-500 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm cursor-text">Email Address</label>
+                </div>
+
+                <div class="relative">
+                    <input type="password" id="password" class="login-input peer w-full border-b-2 border-gray-200 py-3 text-gray-900 placeholder-transparent focus:border-primary focus:outline-none transition-colors bg-transparent" placeholder="Password" autocomplete="current-password" required value="123456">
+                    <label for="password" class="absolute left-0 -top-3.5 text-gray-500 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm cursor-text">Password</label>
+                    <button type="button" onclick="togglePassword()" class="absolute right-0 top-3 text-gray-400 hover:text-gray-600 p-1">
+                        <i class="fas fa-eye" id="eye-icon"></i>
+                    </button>
+                </div>
+
+                <div class="flex items-center justify-between mt-2">
+                    <label class="flex items-center gap-2 cursor-pointer touch-manipulation">
+                        <input type="checkbox" class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
+                        <span class="text-xs text-gray-500">Ingat Saya</span>
+                    </label>
+                    <a href="#" class="text-xs font-semibold text-primary hover:text-primaryDark">Lupa PIN?</a>
+                </div>
+
+                <button type="submit" class="w-full bg-primary hover:bg-primaryDark text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition transform active:scale-[0.98] mt-4 flex items-center justify-center gap-2 touch-manipulation">
+                    <span>Masuk</span>
+                    <i class="fas fa-arrow-right text-sm opacity-70"></i>
+                </button>
+            </form>
+
+            <div class="mt-8 text-center">
+                <button onclick="alert('Fitur Biometrik akan tersedia di versi Native')" class="p-4 rounded-full bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-primary transition active:scale-95">
+                    <i class="fas fa-fingerprint text-3xl"></i>
+                </button>
+                <p class="text-[10px] text-gray-400 mt-2">Sentuh untuk login cepat</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================== APP VIEW (HIDDEN BY DEFAULT) ================== -->
+    <section id="app-view" class="hidden h-full flex flex-col animate-fade-in relative">
+        
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm z-10 shrink-0">
+            <div>
+                <h1 class="text-xl font-bold text-gray-900 tracking-tight">DompetKu</h1>
+                <p class="text-xs text-gray-500 flex items-center gap-1">
+                    <span id="current-date">Memuat...</span>
+                    <span id="offline-indicator" class="hidden text-orange-500 font-bold ml-1">• Offline</span>
+                </p>
+            </div>
+            <div class="flex gap-2">
+                 <button onclick="fetchData(true)" class="p-2 w-10 h-10 rounded-full hover:bg-gray-100 active:bg-gray-200 transition flex items-center justify-center">
+                    <i class="fas fa-sync-alt text-gray-600 text-sm" id="refresh-icon"></i>
+                </button>
+                <button onclick="handleLogout()" class="p-2 w-10 h-10 rounded-full bg-red-50 hover:bg-red-100 text-red-600 active:bg-red-200 transition flex items-center justify-center">
+                    <i class="fas fa-power-off text-sm"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto no-scrollbar relative p-4 pb-32 w-full" id="main-container">
             
-            <div class="grid grid-cols-2 gap-3">
-                <!-- Income -->
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 active:scale-[0.98] transition-transform duration-100">
-                    <div class="flex items-center gap-2 mb-2">
-                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
-                            <i class="fas fa-arrow-down text-xs"></i>
+            <!-- Dashboard View -->
+            <div id="view-dashboard">
+                <div class="grid grid-cols-1 gap-4 mb-6">
+                    <div class="bg-gradient-to-r from-indigo-600 to-blue-500 rounded-2xl p-5 text-white shadow-lg shadow-indigo-200 relative overflow-hidden">
+                        <div class="absolute right-0 top-0 opacity-10 transform translate-x-4 -translate-y-4">
+                            <i class="fas fa-wallet text-9xl"></i>
                         </div>
-                        <span class="text-xs text-gray-500 font-medium truncate">Pemasukan</span>
+                        <p class="text-indigo-100 text-sm font-medium mb-1 relative z-10">Saldo Saat Ini</p>
+                        <h2 class="text-4xl font-bold tracking-tight relative z-10" id="total-balance">Rp 0</h2>
                     </div>
-                    <p class="text-lg font-bold text-gray-800 truncate" id="total-income">Rp 0</p>
-                </div>
-                <!-- Expense -->
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 active:scale-[0.98] transition-transform duration-100">
-                    <div class="flex items-center gap-2 mb-2">
-                        <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
-                            <i class="fas fa-arrow-up text-xs"></i>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
+                                    <i class="fas fa-arrow-down text-xs"></i>
+                                </div>
+                                <span class="text-xs text-gray-500 font-medium truncate">Pemasukan</span>
+                            </div>
+                            <p class="text-lg font-bold text-gray-800 truncate" id="total-income">Rp 0</p>
                         </div>
-                        <span class="text-xs text-gray-500 font-medium truncate">Pengeluaran</span>
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+                                    <i class="fas fa-arrow-up text-xs"></i>
+                                </div>
+                                <span class="text-xs text-gray-500 font-medium truncate">Pengeluaran</span>
+                            </div>
+                            <p class="text-lg font-bold text-gray-800 truncate" id="total-expense">Rp 0</p>
+                        </div>
                     </div>
-                    <p class="text-lg font-bold text-gray-800 truncate" id="total-expense">Rp 0</p>
+                </div>
+
+                <!-- Search & Filter -->
+                <div class="mb-4 sticky top-0 bg-surface/95 backdrop-blur py-2 z-10 space-y-3">
+                    <div class="flex gap-2">
+                        <div class="relative flex-1">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <input type="text" id="search-input" onkeyup="renderHistory()" placeholder="Cari transaksi..." class="w-full bg-white border border-gray-200 rounded-full pl-9 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-shadow">
+                        </div>
+                        <div class="relative">
+                            <select id="month-filter" onchange="renderHistory()" class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm rounded-full pl-4 pr-8 py-2 outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm h-full">
+                                <!-- Populated by JS -->
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="transaction-list" class="space-y-3 pb-safe">
+                    <div class="text-center py-10 text-gray-400">
+                        <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
+                        <p class="text-sm">Menyiapkan data...</p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Filter Month -->
-        <div class="flex justify-between items-center mb-4 sticky top-0 bg-surface/95 backdrop-blur py-2 z-10">
-            <h3 class="text-lg font-bold text-gray-800">Riwayat</h3>
-            <div class="relative">
-                <select id="month-filter" onchange="renderHistory()" class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm rounded-full pl-4 pr-8 py-2 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm">
-                    <!-- Populated by JS -->
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                    <i class="fas fa-chevron-down text-xs"></i>
+            <!-- Report View -->
+            <div id="view-report" class="hidden pb-safe space-y-6">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-gray-800 mb-4">Analisis Bulan Ini</h3>
+                    <div class="h-64 relative">
+                        <canvas id="chart-pie"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-gray-800 mb-4">Tren Harian</h3>
+                    <div class="h-48 relative">
+                        <canvas id="chart-bar"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Transaction List -->
-        <div id="transaction-list" class="space-y-3 pb-safe">
-            <!-- Items injected here -->
-            <div class="text-center py-10 text-gray-400">
-                <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
-                <p class="text-sm">Mengambil data...</p>
+        </main>
+
+        <!-- FAB -->
+        <button onclick="openModal()" class="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,20px))] right-5 bg-gray-900 text-white w-14 h-14 rounded-full shadow-2xl shadow-gray-900/40 flex items-center justify-center text-2xl active:scale-90 transition-transform duration-200 z-30 touch-manipulation">
+            <i class="fas fa-plus"></i>
+        </button>
+
+        <!-- Navigation -->
+        <nav class="glass border-t border-gray-200 fixed bottom-0 w-full z-40 pb-safe">
+            <div class="flex justify-around items-center h-16">
+                <button onclick="switchTab('home')" class="nav-btn active flex-1 flex flex-col items-center justify-center h-full gap-1 text-primary transition active:bg-gray-50" data-target="home">
+                    <i class="fas fa-home text-xl"></i>
+                    <span class="text-[10px] font-medium">Beranda</span>
+                </button>
+                <button onclick="switchTab('hutang')" class="nav-btn flex-1 flex flex-col items-center justify-center h-full gap-1 text-gray-400 hover:text-gray-600 transition active:bg-gray-50" data-target="hutang">
+                    <i class="fas fa-hand-holding-usd text-xl"></i>
+                    <span class="text-[10px] font-medium">Hutang</span>
+                </button>
+                <button onclick="switchTab('laporan')" class="nav-btn flex-1 flex flex-col items-center justify-center h-full gap-1 text-gray-400 hover:text-gray-600 transition active:bg-gray-50" data-target="laporan">
+                    <i class="fas fa-chart-pie text-xl"></i>
+                    <span class="text-[10px] font-medium">Laporan</span>
+                </button>
             </div>
-        </div>
+        </nav>
+    </section>
 
-    </main>
-
-    <!-- Floating Action Button (FAB) -->
-    <!-- Menggunakan bottom-24 + pb-safe agar tidak tertutup nav bar -->
-    <button onclick="openModal()" class="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,20px))] right-5 bg-gray-900 text-white w-14 h-14 rounded-full shadow-2xl shadow-gray-900/40 flex items-center justify-center text-2xl active:scale-90 transition-transform duration-200 z-30 touch-manipulation">
-        <i class="fas fa-plus"></i>
-    </button>
-
-    <!-- Bottom Navigation -->
-    <nav class="glass border-t border-gray-200 fixed bottom-0 w-full z-40 pb-safe">
-        <div class="flex justify-around items-center h-16">
-            <button onclick="switchTab('home')" class="nav-btn active flex-1 flex flex-col items-center justify-center h-full gap-1 text-primary transition active:bg-gray-50" data-target="home">
-                <i class="fas fa-home text-xl"></i>
-                <span class="text-[10px] font-medium">Beranda</span>
-            </button>
-            <button onclick="switchTab('hutang')" class="nav-btn flex-1 flex flex-col items-center justify-center h-full gap-1 text-gray-400 hover:text-gray-600 transition active:bg-gray-50" data-target="hutang">
-                <i class="fas fa-hand-holding-usd text-xl"></i>
-                <span class="text-[10px] font-medium">Hutang</span>
-            </button>
-            <button onclick="switchTab('laporan')" class="nav-btn flex-1 flex flex-col items-center justify-center h-full gap-1 text-gray-400 hover:text-gray-600 transition active:bg-gray-50" data-target="laporan">
-                <i class="fas fa-chart-pie text-xl"></i>
-                <span class="text-[10px] font-medium">Laporan</span>
-            </button>
-        </div>
-    </nav>
-
-    <!-- Input Modal -->
+    <!-- Modal Input -->
     <div id="modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300 flex items-end sm:items-center justify-center">
-        <!-- Menggunakan max-h-[90dvh] agar modal tidak terlalu tinggi di landscape/keyboard terbuka -->
         <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl p-6 transform transition-transform duration-300 translate-y-full sm:translate-y-0 shadow-2xl flex flex-col max-h-[90dvh]" id="modal-content">
-            
-            <!-- Handle bar for mobile visual cue -->
             <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4 sm:hidden"></div>
-
             <div class="flex justify-between items-center mb-6 shrink-0">
                 <h3 class="text-xl font-bold text-gray-900">Tambah Transaksi</h3>
                 <button onclick="closeModal()" class="p-2 -mr-2 text-gray-400 hover:text-gray-600 active:text-gray-900">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
-
             <form id="transaction-form" onsubmit="submitForm(event)" class="overflow-y-auto no-scrollbar pb-safe">
                 <div class="space-y-5">
-                    <!-- Tipe Transaksi -->
                     <div class="grid grid-cols-4 gap-2 bg-gray-100 p-1.5 rounded-xl">
                         <label class="cursor-pointer touch-manipulation">
                             <input type="radio" name="tipe" value="Masuk" class="peer hidden" checked>
@@ -212,28 +296,21 @@
                             <div class="peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm py-2.5 text-center rounded-lg text-xs font-bold text-gray-500 transition-all">Lainnya</div>
                         </label>
                     </div>
-
-                    <!-- Jumlah -->
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Jumlah (Rp)</label>
-                        <!-- Menggunakan input mode numeric agar keyboard angka muncul di Android -->
                         <input type="tel" inputmode="numeric" name="jumlah" required class="w-full text-3xl font-bold text-gray-900 border-b-2 border-gray-200 focus:border-indigo-600 outline-none py-2 placeholder-gray-300 transition bg-transparent" placeholder="0">
                     </div>
-
-                    <!-- Tanggal & Keterangan -->
                     <div class="space-y-4">
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">Tanggal</label>
                             <input type="date" name="tanggal" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
                         </div>
-
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">Keterangan</label>
                             <input type="text" name="keterangan" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" placeholder="Contoh: Makan Siang">
                         </div>
                     </div>
                 </div>
-
                 <button type="submit" id="submit-btn" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-xl mt-8 shadow-lg transition transform active:scale-[0.98] flex justify-center items-center gap-2 touch-manipulation mb-2">
                     <span>Simpan Transaksi</span>
                     <div id="btn-loader" class="loader border-t-white border-gray-500 hidden" style="width: 18px; height: 18px; border-width: 2px;"></div>
@@ -244,48 +321,133 @@
 
     <script>
         // ================= CONFIGURATION =================
-        // GANTI URL INI DENGAN URL DEPLOYMENT APPS SCRIPT ANDA
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwuNMfGNSn-73ZUiCcGl1v8lRTSZFkYeBvUTQjfMlLzhIfKzLql1cqKv1mW8NmCmZ0/exec"; 
         // =================================================
 
         let rawData = [];
-        let currentMonthFilter = '';
+        let pieChart = null;
+        let barChart = null;
 
-        // --- Init ---
-        document.addEventListener('DOMContentLoaded', () => {
+        // --- Auth Logic ---
+        
+        function checkAuth() {
+            const isLoggedIn = localStorage.getItem('dompetku_auth');
+            if (isLoggedIn) {
+                showApp();
+            } else {
+                showLogin();
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            // SIMULASI LOGIN - Ganti logika ini jika punya backend real
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+
+            if (email && pass) { // Terima input apapun untuk demo
+                const btn = e.target.querySelector('button[type="submit"]');
+                const originalText = btn.innerHTML;
+                
+                btn.disabled = true;
+                btn.innerHTML = '<div class="loader" style="width:20px;height:20px;border-color:white;border-top-color:transparent"></div>';
+                
+                // Simulate network delay
+                setTimeout(() => {
+                    localStorage.setItem('dompetku_auth', 'true');
+                    showApp();
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }, 800);
+            }
+        }
+
+        function handleLogout() {
+            if(confirm('Keluar dari aplikasi?')) {
+                localStorage.removeItem('dompetku_auth');
+                showLogin();
+            }
+        }
+
+        function showApp() {
+            document.getElementById('login-view').classList.add('hidden');
+            const appView = document.getElementById('app-view');
+            appView.classList.remove('hidden');
+            
+            // Init App Logic ONLY when shown
+            initApp();
+        }
+
+        function showLogin() {
+            document.getElementById('login-view').classList.remove('hidden');
+            document.getElementById('app-view').classList.add('hidden');
+        }
+
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const icon = document.getElementById('eye-icon');
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = "password";
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // --- App Logic ---
+
+        function initApp() {
             const today = new Date().toISOString().split('T')[0];
             document.querySelector('input[name="tanggal"]').value = today;
             
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('current-date').textContent = new Date().toLocaleDateString('id-ID', options);
             
-            fetchData();
-        });
+            const cachedData = localStorage.getItem('dompetku_data');
+            if (cachedData) {
+                rawData = JSON.parse(cachedData);
+                populateMonthFilter();
+                renderHistory();
+            }
 
-        // --- Core Functions ---
-        
-        async function fetchData() {
+            fetchData();
+        }
+
+        async function fetchData(manual = false) {
             const icon = document.getElementById('refresh-icon');
-            icon.classList.add('fa-spin');
+            if(icon) icon.classList.add('fa-spin');
             
             try {
+                if (!WEB_APP_URL && rawData.length > 0 && !manual) return;
+
                 const response = await fetch(`${WEB_APP_URL}?action=read`);
                 const result = await response.json();
                 
                 if (result.status === 'success') {
                     rawData = result.data;
+                    localStorage.setItem('dompetku_data', JSON.stringify(rawData));
+                    
+                    document.getElementById('offline-indicator').classList.add('hidden');
                     populateMonthFilter();
-                    renderHistory(); // Will also update summary
+                    renderHistory();
+                    if(manual) showToast('Data diperbarui', 'success');
                 } else {
-                    showToast('Gagal memuat data', 'error');
+                    if(manual) showToast('Gagal memuat data', 'error');
                 }
             } catch (error) {
-                console.error(error);
-                showToast('Koneksi error', 'error');
+                if (rawData.length > 0) {
+                    const ind = document.getElementById('offline-indicator');
+                    if(ind) ind.classList.remove('hidden');
+                }
             } finally {
-                icon.classList.remove('fa-spin');
+                if(icon) icon.classList.remove('fa-spin');
             }
         }
+
+        // --- Transaksi Logic (Sama seperti sebelumnya) ---
 
         async function submitForm(e) {
             e.preventDefault();
@@ -293,7 +455,6 @@
             const loader = document.getElementById('btn-loader');
             const btnText = btn.querySelector('span');
 
-            // UI Loading
             btn.disabled = true;
             btnText.textContent = 'Menyimpan...';
             loader.classList.remove('hidden');
@@ -301,15 +462,9 @@
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
             
-            // Auto Status for Hutang
-            if(data.tipe === 'Hutang') {
-                data.status = 'Belum Lunas';
-            } else {
-                data.status = '-';
-            }
+            data.status = (data.tipe === 'Hutang') ? 'Belum Lunas' : '-';
 
             try {
-                // Apps Script requires text/plain for POST to avoid CORS preflight issues sometimes
                 const response = await fetch(`${WEB_APP_URL}?action=create`, {
                     method: 'POST',
                     body: JSON.stringify(data)
@@ -317,17 +472,16 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    showToast('Data berhasil disimpan', 'success');
+                    showToast('Tersimpan', 'success');
                     closeModal();
                     e.target.reset();
-                    // Reset date to today
                     document.querySelector('input[name="tanggal"]').value = new Date().toISOString().split('T')[0];
-                    fetchData(); // Refresh data
+                    fetchData(true); 
                 } else {
                     throw new Error(result.message);
                 }
             } catch (error) {
-                showToast('Gagal menyimpan: ' + error.message, 'error');
+                showToast('Gagal: ' + error.message, 'error');
             } finally {
                 btn.disabled = false;
                 btnText.textContent = 'Simpan Transaksi';
@@ -336,9 +490,7 @@
         }
 
         async function markAsPaid(id) {
-            if(!confirm("Tandai hutang ini sebagai Lunas?")) return;
-
-            // Show optimistic update immediately or loading? Let's do simple loading
+            if(!confirm("Lunasi hutang ini?")) return;
             const card = document.getElementById(`card-${id}`);
             if(card) card.style.opacity = '0.5';
 
@@ -348,10 +500,9 @@
                     body: JSON.stringify({ id: id, status: 'Lunas' })
                 });
                 const result = await response.json();
-                
                 if (result.status === 'success') {
-                    showToast('Hutang Lunas!', 'success');
-                    fetchData();
+                    showToast('Lunas!', 'success');
+                    fetchData(true);
                 }
             } catch (error) {
                 showToast('Gagal update', 'error');
@@ -359,45 +510,37 @@
             }
         }
 
-        // --- Rendering Logic ---
+        // --- Render UI ---
 
         function populateMonthFilter() {
             const select = document.getElementById('month-filter');
+            const currentVal = select.value;
             const uniqueMonths = [...new Set(rawData.map(item => {
                 const d = new Date(item.tanggal);
                 return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
             }))].sort().reverse();
 
-            // Store current selection or default to latest
-            const currentVal = select.value || (uniqueMonths.length > 0 ? uniqueMonths[0] : '');
-            
             select.innerHTML = uniqueMonths.map(m => {
                 const [y, monthNum] = m.split('-');
                 const monthName = new Date(y, monthNum - 1).toLocaleString('id-ID', { month: 'long' });
                 return `<option value="${m}">${monthName} ${y}</option>`;
             }).join('');
             
-            if (uniqueMonths.length === 0) {
-                 select.innerHTML = `<option value="">Bulan Ini</option>`;
-            } else {
-                select.value = currentVal;
-            }
+            if (uniqueMonths.length === 0) select.innerHTML = `<option value="">Bulan Ini</option>`;
+            if (currentVal && uniqueMonths.includes(currentVal)) select.value = currentVal;
+            else if (uniqueMonths.length > 0) select.value = uniqueMonths[0];
         }
 
         function renderHistory() {
             const filterValue = document.getElementById('month-filter').value;
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const container = document.getElementById('transaction-list');
             
-            // Filter Data
             let filteredData = rawData;
-            if (filterValue) {
-                filteredData = rawData.filter(item => item.tanggal.startsWith(filterValue));
-            }
+            if (filterValue) filteredData = filteredData.filter(item => item.tanggal.startsWith(filterValue));
+            if (searchTerm) filteredData = filteredData.filter(item => item.keterangan.toLowerCase().includes(searchTerm) || item.jumlah.toString().includes(searchTerm));
 
-            // Calculate Summary based on filtered data
-            let income = 0;
-            let expense = 0;
-            
+            let income = 0, expense = 0;
             filteredData.forEach(item => {
                 const val = parseInt(item.jumlah);
                 if (item.tipe === 'Masuk' || item.tipe === 'Lainnya') income += val;
@@ -408,24 +551,17 @@
             document.getElementById('total-expense').textContent = formatRupiah(expense);
             document.getElementById('total-balance').textContent = formatRupiah(income - expense);
 
-            // Check Active Tab
             const activeTab = document.querySelector('.nav-btn.active').dataset.target;
-
             if (activeTab === 'hutang') {
-                renderDebtList(rawData); // Show all debts regardless of month, or filter? Usually debt is global.
+                renderDebtList(rawData, searchTerm);
                 return;
             } else if (activeTab === 'laporan') {
-                container.innerHTML = `<div class="text-center py-10 text-gray-400">Fitur Laporan Grafik akan segera hadir</div>`;
+                renderReports(filteredData);
                 return;
             }
 
-            // Render List
             if (filteredData.length === 0) {
-                container.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-10 text-gray-400">
-                        <i class="fas fa-receipt text-4xl mb-3 opacity-20"></i>
-                        <p class="text-sm">Belum ada transaksi bulan ini.</p>
-                    </div>`;
+                container.innerHTML = `<div class="flex flex-col items-center justify-center py-10 text-gray-400"><i class="fas fa-receipt text-4xl mb-3 opacity-20"></i><p class="text-sm">Kosong</p></div>`;
                 return;
             }
 
@@ -433,34 +569,27 @@
                 const isExpense = item.tipe === 'Keluar' || item.tipe === 'Hutang';
                 const colorClass = isExpense ? 'text-red-600' : 'text-green-600';
                 const iconBg = isExpense ? 'bg-red-50' : 'bg-green-50';
-                const icon = getIcon(item.tipe);
-                const dateDisplay = new Date(item.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-
                 return `
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between active:bg-gray-50 transition-colors">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full ${iconBg} flex items-center justify-center ${colorClass} shrink-0">
-                            <i class="${icon}"></i>
-                        </div>
+                        <div class="w-10 h-10 rounded-full ${iconBg} flex items-center justify-center ${colorClass} shrink-0"><i class="${getIcon(item.tipe)}"></i></div>
                         <div class="min-w-0">
                             <p class="font-bold text-gray-800 text-sm truncate">${item.keterangan}</p>
-                            <p class="text-xs text-gray-400">${dateDisplay} • ${item.tipe}</p>
+                            <p class="text-xs text-gray-400">${new Date(item.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} • ${item.tipe}</p>
                         </div>
                     </div>
-                    <div class="text-right shrink-0 ml-2">
-                        <p class="font-bold ${colorClass} text-sm">${isExpense ? '-' : '+'} ${formatRupiah(item.jumlah)}</p>
-                    </div>
-                </div>
-                `;
+                    <div class="text-right shrink-0 ml-2"><p class="font-bold ${colorClass} text-sm">${isExpense ? '-' : '+'} ${formatRupiah(item.jumlah)}</p></div>
+                </div>`;
             }).join('');
         }
 
-        function renderDebtList(data) {
+        function renderDebtList(data, search) {
             const container = document.getElementById('transaction-list');
-            const debts = data.filter(item => item.tipe === 'Hutang');
+            let debts = data.filter(item => item.tipe === 'Hutang');
+            if(search) debts = debts.filter(item => item.keterangan.toLowerCase().includes(search));
 
             if (debts.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 text-gray-400">Tidak ada data hutang.</div>`;
+                container.innerHTML = `<div class="text-center py-10 text-gray-400">Tidak ada hutang.</div>`;
                 return;
             }
 
@@ -470,109 +599,105 @@
                 <div id="card-${item.id}" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-3 relative overflow-hidden active:bg-gray-50 transition-colors">
                     ${isLunas ? '<div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] px-2 py-1 rounded-bl-lg">LUNAS</div>' : ''}
                     <div class="flex justify-between items-start mb-2">
-                        <div class="min-w-0 pr-2">
-                            <h4 class="font-bold text-gray-800 truncate">${item.keterangan}</h4>
-                            <p class="text-xs text-gray-500">${new Date(item.tanggal).toLocaleDateString('id-ID')}</p>
-                        </div>
+                        <div class="min-w-0 pr-2"><h4 class="font-bold text-gray-800 truncate">${item.keterangan}</h4><p class="text-xs text-gray-500">${new Date(item.tanggal).toLocaleDateString('id-ID')}</p></div>
                         <p class="font-bold text-red-600 shrink-0">${formatRupiah(item.jumlah)}</p>
                     </div>
                     <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-50">
-                        <span class="text-xs font-medium px-2 py-1 rounded ${isLunas ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                            ${item.status}
-                        </span>
-                        ${!isLunas ? `
-                        <button onclick="markAsPaid('${item.id}')" class="text-xs bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 active:scale-95 transition shadow-md shadow-indigo-200">
-                            Lunasi
-                        </button>` : ''}
+                        <span class="text-xs font-medium px-2 py-1 rounded ${isLunas ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${item.status}</span>
+                        ${!isLunas ? `<button onclick="markAsPaid('${item.id}')" class="text-xs bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 active:scale-95 transition shadow-md shadow-indigo-200">Lunasi</button>` : ''}
                     </div>
-                </div>
-                `;
+                </div>`;
             }).join('');
         }
 
-        // --- Helpers ---
+        function renderReports(data) {
+            if (typeof Chart === 'undefined') return;
+            if(pieChart) pieChart.destroy();
+            if(barChart) barChart.destroy();
 
-        function formatRupiah(angka) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+            const ctxPie = document.getElementById('chart-pie').getContext('2d');
+            pieChart = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Masuk', 'Keluar', 'Hutang'],
+                    datasets: [{
+                        data: [
+                            data.filter(i => i.tipe === 'Masuk' || i.tipe === 'Lainnya').reduce((a, b) => a + parseInt(b.jumlah), 0),
+                            data.filter(i => i.tipe === 'Keluar').reduce((a, b) => a + parseInt(b.jumlah), 0),
+                            data.filter(i => i.tipe === 'Hutang').reduce((a, b) => a + parseInt(b.jumlah), 0),
+                        ],
+                        backgroundColor: ['#10B981', '#EF4444', '#F59E0B'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: {size: 10} } } } }
+            });
+
+            const dailyData = {};
+            data.slice(0, 30).forEach(item => {
+                const d = item.tanggal.substring(5);
+                if(!dailyData[d]) dailyData[d] = 0;
+                dailyData[d] += parseInt(item.jumlah);
+            });
+            const sortedKeys = Object.keys(dailyData).sort().slice(-7);
+
+            const ctxBar = document.getElementById('chart-bar').getContext('2d');
+            barChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: sortedKeys,
+                    datasets: [{ label: 'Vol', data: sortedKeys.map(k => dailyData[k]), backgroundColor: '#4F46E5', borderRadius: 4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { display: false }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+            });
         }
 
+        function formatRupiah(angka) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka); }
         function getIcon(tipe) {
-            switch(tipe) {
-                case 'Masuk': return 'fas fa-wallet';
-                case 'Keluar': return 'fas fa-shopping-bag';
-                case 'Hutang': return 'fas fa-file-invoice-dollar';
-                default: return 'fas fa-coins';
-            }
+            switch(tipe) { case 'Masuk': return 'fas fa-wallet'; case 'Keluar': return 'fas fa-shopping-bag'; case 'Hutang': return 'fas fa-file-invoice-dollar'; default: return 'fas fa-coins'; }
         }
-
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
             const text = document.getElementById('toast-message');
-
             toast.classList.remove('opacity-0', 'pointer-events-none');
             text.innerText = msg;
-
-            if (type === 'error') {
-                icon.className = 'fas fa-exclamation-circle text-red-400';
-            } else {
-                icon.className = 'fas fa-check-circle text-green-400';
-            }
-
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'pointer-events-none');
-            }, 3000);
+            icon.className = type === 'error' ? 'fas fa-exclamation-circle text-red-400' : 'fas fa-check-circle text-green-400';
+            setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 3000);
         }
 
         // --- UI Interactions ---
-
         function openModal() {
             const modal = document.getElementById('modal');
             const content = document.getElementById('modal-content');
             modal.classList.remove('hidden');
-            // Small delay for animation
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                content.classList.remove('translate-y-full');
-            }, 10);
+            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('translate-y-full'); }, 10);
         }
-
         function closeModal() {
             const modal = document.getElementById('modal');
             const content = document.getElementById('modal-content');
-            
-            modal.classList.add('opacity-0');
-            content.classList.add('translate-y-full'); // Slide down
-            
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
+            modal.classList.add('opacity-0'); content.classList.add('translate-y-full');
+            setTimeout(() => modal.classList.add('hidden'), 300);
         }
-
         function switchTab(target) {
-            // Update UI
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 if(btn.dataset.target === target) {
-                    btn.classList.add('active', 'text-primary');
-                    btn.classList.remove('text-gray-400');
-                    btn.querySelector('i').classList.add('text-primary');
-                    btn.querySelector('i').classList.remove('text-gray-400');
+                    btn.classList.add('active', 'text-primary'); btn.classList.remove('text-gray-400');
+                    btn.querySelector('i').classList.add('text-primary'); btn.querySelector('i').classList.remove('text-gray-400');
                 } else {
-                    btn.classList.remove('active', 'text-primary');
-                    btn.classList.add('text-gray-400');
-                    btn.querySelector('i').classList.remove('text-primary');
-                    btn.querySelector('i').classList.add('text-gray-400');
+                    btn.classList.remove('active', 'text-primary'); btn.classList.add('text-gray-400');
+                    btn.querySelector('i').classList.remove('text-primary'); btn.querySelector('i').classList.add('text-gray-400');
                 }
             });
-
-            // Re-render based on new active tab
+            document.getElementById('view-dashboard').classList.toggle('hidden', target === 'laporan');
+            document.getElementById('view-report').classList.toggle('hidden', target !== 'laporan');
             renderHistory();
         }
 
-        // Close modal on click outside
-        document.getElementById('modal').addEventListener('click', (e) => {
-            if (e.target.id === 'modal') closeModal();
-        });
+        document.getElementById('modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
+        
+        // --- START ---
+        document.addEventListener('DOMContentLoaded', checkAuth);
 
     </script>
 </body>
