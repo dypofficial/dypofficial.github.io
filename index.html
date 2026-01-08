@@ -77,15 +77,24 @@
         /* HISTORY & CONTENT */
         .section-title { padding: 0 20px; font-size: 1.1rem; font-weight: 700; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         .history-list { padding: 0 20px; display: flex; flex-direction: column; gap: 12px; }
-        .transaction-card { background: var(--bg-card); padding: 15px; border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
-        .t-left { display: flex; align-items: center; gap: 15px; }
-        .t-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; background: #F1F5F9; color: var(--text-muted); }
+        .transaction-card { background: var(--bg-card); padding: 15px; border-radius: var(--radius); display: flex; justify-content: space-between; align-items: flex-start; box-shadow: var(--shadow); cursor: default; }
+        .t-left { display: flex; align-items: flex-start; gap: 15px; flex: 1; }
+        .t-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; background: #F1F5F9; color: var(--text-muted); flex-shrink: 0; }
+        .t-info { display: flex; flex-direction: column; gap: 2px; width: 100%; }
         .t-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 2px; }
         .t-info span { font-size: 0.75rem; color: var(--text-muted); }
-        .t-amount { font-weight: 700; font-size: 0.95rem; }
+        .t-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+        .t-amount { font-weight: 700; font-size: 0.95rem; white-space: nowrap; }
+        
         .text-green { color: var(--success); }
         .text-red { color: var(--danger); }
         .text-orange { color: var(--warning); }
+
+        /* DEBT STATUS BADGES */
+        .badge-debt { font-size: 0.65rem; padding: 3px 8px; border-radius: 6px; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; display: inline-block; }
+        .badge-unpaid { background-color: #FEF2F2; color: var(--danger); border-color: #FECACA; }
+        .badge-paid { background-color: #ECFDF5; color: var(--success); border-color: #A7F3D0; }
+        .badge-debt:active { transform: scale(0.95); }
 
         /* MODAL (FORM INPUT) */
         .modal { position: fixed; bottom: -100%; left: 0; right: 0; background: var(--bg-card); border-top-left-radius: 25px; border-top-right-radius: 25px; padding: 25px; box-shadow: 0 -5px 25px rgba(0,0,0,0.15); transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; max-width: 480px; margin: 0 auto; }
@@ -131,7 +140,6 @@
             <div class="balance-card">
                 <div class="balance-label">Total Saldo (Semua Waktu)</div>
                 <div class="balance-amount" id="displayBalance">Rp 0</div>
-                <!-- Statistik di sini dihapus, dipindah ke filter bulanan agar lebih relevan -->
             </div>
         </header>
 
@@ -238,13 +246,7 @@
     <div id="toast" class="toast">Berhasil disimpan</div>
 
     <script>
-        /**
-         * KONFIGURASI SISTEM
-         * ------------------
-         * Ganti URL di bawah ini dengan URL Web App dari Google Apps Script Anda.
-         * Jika kosong, sistem akan berjalan dalam MODE DEMO (Data LocalStorage).
-         */
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxX6XpptFEW32cfhoK_KSP0sDVe0uTQ8gQIqsFY9n60verz0uXmADRuUUSAsRB4ogE4/exec"; 
+        const GOOGLE_SCRIPT_URL = ""; 
         
         // State Management
         let transactions = [];
@@ -302,16 +304,16 @@
             const historyList = document.getElementById('historyList');
             historyList.innerHTML = '';
             
-            // Ambil filter bulan
             const filterValue = document.getElementById('monthFilter').value; // format YYYY-MM
             
             let globalBalance = 0;
             let monthIncome = 0;
             let monthExpense = 0;
             
-            // 1. Hitung Saldo Global (Semua waktu)
+            // 1. Hitung Saldo Global
             transactions.forEach(item => {
                 const amount = parseFloat(item.amount);
+                // Hutang yang belum lunas tetap mengurangi "Saldo" visual
                 if (item.type === 'Masuk') globalBalance += amount;
                 else if (item.type === 'Keluar' || item.type === 'Hutang') globalBalance -= amount;
             });
@@ -319,20 +321,23 @@
 
             // 2. Filter data berdasarkan Bulan
             const filteredData = transactions.filter(item => {
-                // Konversi tanggal DD/MM/YYYY ke YYYY-MM
                 if(!item.date) return false;
-                const parts = item.date.split('/'); // Asumsi format dd/mm/yyyy
+                const parts = item.date.split('/'); 
                 if(parts.length !== 3) return false;
-                
-                const itemYearMonth = `${parts[2]}-${parts[1]}`; // YYYY-MM
+                const itemYearMonth = `${parts[2]}-${parts[1]}`;
                 return itemYearMonth === filterValue;
             });
 
-            // 3. Render Data Filtered & Hitung Statistik Bulan Ini
-            // Sort by date (terbaru diatas, khusus bulan ini)
-            const sortedData = [...filteredData].reverse();
+            // 3. Render Data Filtered
+            // Karena kita butuh indeks asli untuk update status, kita simpan referensi
+            // Tapi untuk simplifikasi demo, kita pakai ID unik jika ada, atau indeks array global
+            // Kita akan mapping ulang agar bisa akses index asli
+            const dataToRender = filteredData.map(item => ({
+                ...item,
+                originalIndex: transactions.indexOf(item)
+            })).reverse();
 
-            if (sortedData.length === 0) {
+            if (dataToRender.length === 0) {
                 historyList.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-calendar-times" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
@@ -340,32 +345,41 @@
                     </div>`;
             }
 
-            sortedData.forEach(item => {
+            dataToRender.forEach(item => {
                 const amount = parseFloat(item.amount);
                 
                 // Hitung Statistik Bulanan
-                if (item.type === 'Masuk') {
-                    monthIncome += amount;
-                } else if (item.type === 'Keluar') {
-                    monthExpense += amount;
-                } else if (item.type === 'Hutang') {
-                     // Hutang dianggap beban/pengeluaran di statistik bulanan
-                     // Atau bisa dipisah jika ingin. Di sini digabung ke expense visual chart.
-                     monthExpense += amount; 
-                }
+                if (item.type === 'Masuk') monthIncome += amount;
+                else if (item.type === 'Keluar' || item.type === 'Hutang') monthExpense += amount;
 
-                // Render Item HTML
+                // Render Item
                 const div = document.createElement('div');
                 div.className = 'transaction-card';
                 
                 let iconClass = 'fa-money-bill';
                 let colorClass = 'text-green';
                 let amountSign = '+';
+                let debtStatusHtml = '';
 
-                if (item.type === 'Masuk') { iconClass = 'fa-arrow-down'; colorClass = 'text-green'; amountSign = '+'; }
-                else if (item.type === 'Keluar') { iconClass = 'fa-arrow-up'; colorClass = 'text-red'; amountSign = '-'; }
-                else if (item.type === 'Hutang') { iconClass = 'fa-hand-holding-usd'; colorClass = 'text-orange'; amountSign = '-'; }
-                else { iconClass = 'fa-circle'; colorClass = 'text-blue'; amountSign = ''; }
+                if (item.type === 'Masuk') { 
+                    iconClass = 'fa-arrow-down'; colorClass = 'text-green'; amountSign = '+'; 
+                } else if (item.type === 'Keluar') { 
+                    iconClass = 'fa-arrow-up'; colorClass = 'text-red'; amountSign = '-'; 
+                } else if (item.type === 'Hutang') { 
+                    iconClass = 'fa-hand-holding-usd'; colorClass = 'text-orange'; amountSign = '-'; 
+                    
+                    // Logic Status Hutang
+                    const isPaid = item.status === 'Lunas';
+                    const badgeClass = isPaid ? 'badge-paid' : 'badge-unpaid';
+                    const badgeText = isPaid ? 'Lunas' : 'Belum Lunas';
+                    
+                    debtStatusHtml = `
+                        <div class="badge-debt ${badgeClass}" 
+                             onclick="toggleDebtStatus(${item.originalIndex}, '${item.status}')">
+                             ${badgeText} <i class="fas fa-edit" style="font-size:0.6rem; margin-left:2px;"></i>
+                        </div>
+                    `;
+                }
 
                 div.innerHTML = `
                     <div class="t-left">
@@ -375,26 +389,57 @@
                         <div class="t-info">
                             <h4>${item.note || item.category}</h4>
                             <span>${item.date} • ${item.category}</span>
+                            ${debtStatusHtml ? `<div style="margin-top:4px;">${debtStatusHtml}</div>` : ''}
                         </div>
                     </div>
-                    <div class="t-amount ${colorClass}">${amountSign} ${formatRupiah(amount)}</div>
+                    <div class="t-right">
+                        <div class="t-amount ${colorClass}">${amountSign} ${formatRupiah(amount)}</div>
+                    </div>
                 `;
                 historyList.appendChild(div);
             });
 
-            // Update UI Statistik Bulanan
             document.getElementById('monthIn').textContent = formatRupiah(monthIncome);
             document.getElementById('monthOut').textContent = formatRupiah(monthExpense);
             
             updateChart(monthIncome, monthExpense);
         }
 
-        // --- DATA HANDLERS (DEMO & API) ---
+        function toggleDebtStatus(index, currentStatus) {
+            // Hanya bekerja optimal di Mode Demo (Local Storage)
+            // Untuk Online Mode, memerlukan Script Google Apps yang mendukung fitur 'Edit'
+            
+            if (GOOGLE_SCRIPT_URL !== "") {
+                alert("Fitur ubah status hutang hanya tersimpan di browser (Lokal) karena API saat ini hanya mendukung penambahan data (Append Only).");
+            }
+
+            const newStatus = currentStatus === 'Lunas' ? 'Belum Lunas' : 'Lunas';
+            const confirmMsg = currentStatus === 'Lunas' 
+                ? "Tandai kembali sebagai Belum Lunas?" 
+                : "Tandai hutang ini sebagai Lunas?";
+
+            if(confirm(confirmMsg)) {
+                transactions[index].status = newStatus;
+                
+                // Simpan perubahan ke LocalStorage (selalu simpan lokal agar UI update)
+                localStorage.setItem('finsaku_data', JSON.stringify(transactions));
+                
+                renderData();
+                showToast(`Status diubah menjadi ${newStatus}`);
+            }
+        }
+
+        // --- DATA HANDLERS ---
 
         function loadLocalData() {
             const saved = localStorage.getItem('finsaku_data');
             if (saved) {
                 transactions = JSON.parse(saved);
+                // Migrasi data lama yang belum punya status
+                transactions = transactions.map(t => {
+                    if (t.type === 'Hutang' && !t.status) t.status = 'Belum Lunas';
+                    return t;
+                });
             }
             renderData();
         }
@@ -409,7 +454,11 @@
                 const response = await fetch(GOOGLE_SCRIPT_URL);
                 const result = await response.json();
                 if (result.status === 'success') {
-                    transactions = result.data;
+                    // Backend mungkin belum punya kolom status, jadi kita defaultkan di frontend
+                    transactions = result.data.map(t => ({
+                        ...t,
+                        status: t.status || (t.type === 'Hutang' ? 'Belum Lunas' : 'Selesai')
+                    }));
                     renderData();
                 }
             } catch (error) {
@@ -426,35 +475,38 @@
             const btnText = document.getElementById('btnText');
             const loader = document.getElementById('btnLoader');
             
-            // UI Loading
             btnSubmit.disabled = true;
             btnText.textContent = "Menyimpan...";
             loader.classList.remove('hidden');
 
-            // PENTING: Format tanggal harus dd/mm/yyyy agar konsisten dengan parser di renderData
             const today = new Date();
             const dd = String(today.getDate()).padStart(2, '0');
             const mm = String(today.getMonth() + 1).padStart(2, '0');
             const yyyy = today.getFullYear();
             const formattedDate = `${dd}/${mm}/${yyyy}`;
 
+            const type = document.getElementById('inputType').value;
+            
+            // Tentukan status awal
+            let initialStatus = 'Selesai';
+            if (type === 'Hutang') initialStatus = 'Belum Lunas';
+
             const data = {
                 date: formattedDate,
-                type: document.getElementById('inputType').value,
+                type: type,
                 amount: document.getElementById('inputAmount').value,
                 category: document.getElementById('inputCategory').value,
-                note: document.getElementById('inputNote').value || '-'
+                note: document.getElementById('inputNote').value || '-',
+                status: initialStatus 
             };
 
             if (GOOGLE_SCRIPT_URL === "") {
-                // SIMULASI OFFLINE/DEMO
                 setTimeout(() => {
                     transactions.push(data);
                     localStorage.setItem('finsaku_data', JSON.stringify(transactions));
                     finishSubmit(true);
                 }, 800);
             } else {
-                // KIRIM KE GOOGLE SHEET
                 try {
                     const response = await fetch(GOOGLE_SCRIPT_URL, {
                         method: 'POST',
@@ -463,7 +515,10 @@
                     
                     const result = await response.json(); 
                     finishSubmit(true);
-                    fetchDataFromSheet(); // Reload data
+                    // Kita reload manual agar data baru muncul
+                    // Idealnya fetch ulang, tapi di sini kita push manual ke array lokal sementara
+                    transactions.push(data); 
+                    renderData();
                 } catch (error) {
                     console.error("Error:", error);
                     finishSubmit(true);
@@ -489,7 +544,7 @@
         }
 
         function refreshData() {
-            if (GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbxX6XpptFEW32cfhoK_KSP0sDVe0uTQ8gQIqsFY9n60verz0uXmADRuUUSAsRB4ogE4/exec") {
+            if (GOOGLE_SCRIPT_URL === "") {
                 showToast("Mode Demo: Data lokal dimuat ulang");
                 loadLocalData();
             } else {
@@ -501,15 +556,12 @@
         function initChart() {
             const ctx = document.getElementById('financeChart').getContext('2d');
             myChart = new Chart(ctx, {
-                type: 'doughnut', // Ganti ke doughnut agar lebih modern untuk stat bulanan
+                type: 'doughnut', 
                 data: {
                     labels: ['Pemasukan', 'Pengeluaran'],
                     datasets: [{
                         data: [0, 0],
-                        backgroundColor: [
-                            '#10B981', // Green
-                            '#EF4444'  // Red
-                        ],
+                        backgroundColor: ['#10B981', '#EF4444'],
                         borderWidth: 0,
                         hoverOffset: 4
                     }]
@@ -530,7 +582,7 @@
                             }
                         }
                     },
-                    cutout: '70%', // Membuat lubang tengah lebih besar
+                    cutout: '70%', 
                 }
             });
         }
@@ -542,7 +594,6 @@
             }
         }
 
-        // Jalankan saat load
         window.addEventListener('DOMContentLoaded', init);
 
     </script>
