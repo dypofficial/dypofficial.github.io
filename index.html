@@ -10,7 +10,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
@@ -21,24 +21,28 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'], // Mengganti ke font yang lebih geometris & modern
                     },
                     colors: {
-                        primary: '#4F46E5',
-                        primaryDark: '#4338ca',
+                        primary: '#4338ca', // Indigo-700
+                        primaryLight: '#6366f1', // Indigo-500
                         secondary: '#10B981',
                         danger: '#EF4444',
-                        surface: '#F9FAFB'
+                        surface: '#F8FAFC'
                     },
                     animation: {
-                        'fade-in': 'fadeIn 0.3s ease-out',
-                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-                        'bounce-in': 'bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                        'fade-in': 'fadeIn 0.4s ease-out',
+                        'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'float': 'float 6s ease-in-out infinite'
                     },
                     keyframes: {
                         fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
                         slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
-                        bounceIn: { '0%': { transform: 'scale(0.8)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } }
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } }
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'glow': '0 0 15px rgba(99, 102, 241, 0.3)'
                     }
                 }
             }
@@ -48,22 +52,28 @@
         body { 
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior-y: none;
+            background-color: #F8FAFC;
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Modern Glass Effect */
         .glass {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
+
         .loader {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #4F46E5;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid #ffffff;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.8s linear infinite;
         }
+        
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
         
         /* Checkbox Custom Style */
@@ -99,187 +109,219 @@
             transform: scale(1);
         }
 
-        /* Custom Input for Login */
-        .login-input:focus ~ label,
-        .login-input:not(:placeholder-shown) ~ label {
-            transform: translateY(-1.5rem) scale(0.85);
-            color: #4F46E5;
+        /* Background Pattern for Login */
+        .bg-pattern {
+            background-color: #F8FAFC;
+            background-image: radial-gradient(#E2E8F0 1px, transparent 1px);
+            background-size: 24px 24px;
         }
-        
+
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-surface text-gray-800 font-sans h-[100dvh] w-full overflow-hidden text-base">
+<body class="text-slate-800 font-sans h-[100dvh] w-full overflow-hidden text-sm sm:text-base">
 
     <!-- Notification Toast -->
-    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-xl z-[60] transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-3 w-max max-w-[90%]">
+    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl z-[60] transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-3 w-max max-w-[90%] border border-slate-700">
         <i id="toast-icon" class="fas fa-check-circle text-green-400"></i>
         <span id="toast-message" class="text-sm font-medium truncate">Berhasil</span>
     </div>
 
     <!-- Delete Floating Action Bar -->
-    <div id="delete-bar" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-white px-6 py-3 rounded-full shadow-2xl shadow-red-200 z-[50] transition-all duration-300 translate-y-32 flex items-center gap-4 border border-red-100">
-        <span class="text-sm font-bold text-gray-700"><span id="selected-count">0</span> Dipilih</span>
-        <div class="h-4 w-px bg-gray-300"></div>
-        <button id="btn-confirm-delete" onclick="deleteSelectedItems()" class="text-red-600 font-bold text-sm flex items-center gap-2 active:scale-95 transition">
+    <div id="delete-bar" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 glass px-6 py-3 rounded-full shadow-xl shadow-red-100/50 z-[50] transition-all duration-300 translate-y-32 flex items-center gap-4 border border-red-100">
+        <span class="text-sm font-bold text-slate-700"><span id="selected-count">0</span> Dipilih</span>
+        <div class="h-4 w-px bg-slate-300"></div>
+        <button id="btn-confirm-delete" onclick="deleteSelectedItems()" class="text-red-600 font-bold text-sm flex items-center gap-2 active:scale-95 transition hover:text-red-700">
             <i class="fas fa-trash-alt"></i> Hapus
         </button>
     </div>
 
-    <!-- ================== LOGIN VIEW ================== -->
-    <section id="login-view" class="h-full w-full flex flex-col items-center justify-center p-6 bg-white absolute inset-0 z-50">
+    <!-- ================== LOGIN VIEW (REDESIGNED) ================== -->
+    <section id="login-view" class="h-full w-full flex flex-col items-center justify-center p-6 bg-pattern absolute inset-0 z-50 overflow-hidden">
         
-        <div class="w-full max-w-sm flex flex-col items-center animate-slide-up">
-            <!-- Logo Area -->
-            <div class="mb-8 relative">
-                <div class="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center rotate-3">
-                    <i class="fas fa-wallet text-4xl text-primary -rotate-3"></i>
-                </div>
-                <div class="absolute -bottom-2 -right-2 bg-green-100 text-green-600 text-xs font-bold px-2 py-1 rounded-lg border-2 border-white">
-                    v3.1
-                </div>
-            </div>
+        <!-- Decorative Background Blobs -->
+        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-float"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-float" style="animation-delay: 2s"></div>
 
-            <div class="text-center mb-10">
-                <h1 class="text-2xl font-bold text-gray-900 mb-2">Selamat Datang</h1>
-                <p class="text-gray-500 text-sm">Masuk untuk mengelola keuanganmu.</p>
-            </div>
-
-            <!-- Login Form -->
-            <form onsubmit="handleLogin(event)" class="w-full space-y-6">
+        <div class="w-full max-w-[360px] flex flex-col items-center relative z-10 animate-slide-up">
+            
+            <!-- Modern Card Container -->
+            <div class="w-full bg-white/70 backdrop-blur-xl border border-white/50 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8">
                 
-                <div class="relative">
-                    <input type="email" id="email" class="login-input peer w-full border-b-2 border-gray-200 py-3 text-gray-900 placeholder-transparent focus:border-primary focus:outline-none transition-colors bg-transparent" placeholder="Email" autocomplete="email" required value="admin@uangku.com">
-                    <label for="email" class="absolute left-0 -top-3.5 text-gray-500 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm cursor-text">Email Address</label>
+                <!-- Logo Area -->
+                <div class="flex flex-col items-center mb-8">
+                    <div class="w-16 h-16 bg-gradient-to-tr from-primary to-primaryLight rounded-2xl flex items-center justify-center shadow-glow mb-4 rotate-3 hover:rotate-6 transition-transform duration-300">
+                        <i class="fas fa-wallet text-2xl text-white -rotate-3"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">DompetKu</h1>
+                    <p class="text-slate-500 text-xs font-medium mt-1">Kelola finansial dengan presisi</p>
                 </div>
 
-                <div class="relative">
-                    <input type="password" id="password" class="login-input peer w-full border-b-2 border-gray-200 py-3 text-gray-900 placeholder-transparent focus:border-primary focus:outline-none transition-colors bg-transparent" placeholder="Password" autocomplete="current-password" required value="123456">
-                    <label for="password" class="absolute left-0 -top-3.5 text-gray-500 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm cursor-text">Password</label>
-                    <button type="button" onclick="togglePassword()" class="absolute right-0 top-3 text-gray-400 hover:text-gray-600 p-1">
-                        <i class="fas fa-eye" id="eye-icon"></i>
+                <!-- Login Form -->
+                <form onsubmit="handleLogin(event)" class="space-y-5">
+                    
+                    <!-- Email Input -->
+                    <div class="space-y-1.5">
+                        <label for="email" class="text-xs font-semibold text-slate-600 ml-1">Email</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-slate-400 group-focus-within:text-primary transition-colors"></i>
+                            </div>
+                            <input type="email" id="email" class="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none text-sm font-medium shadow-sm" placeholder="nama@email.com" autocomplete="email" required value="admin@uangku.com">
+                        </div>
+                    </div>
+
+                    <!-- Password Input -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center ml-1">
+                            <label for="password" class="text-xs font-semibold text-slate-600">Password</label>
+                        </div>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-slate-400 group-focus-within:text-primary transition-colors"></i>
+                            </div>
+                            <input type="password" id="password" class="w-full pl-11 pr-11 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none text-sm font-medium shadow-sm" placeholder="••••••••" autocomplete="current-password" required value="123456">
+                            <button type="button" onclick="togglePassword()" class="absolute right-0 top-0 bottom-0 px-4 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
+                                <i class="fas fa-eye text-xs" id="eye-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-1">
+                        <label class="flex items-center gap-2 cursor-pointer touch-manipulation group">
+                            <input type="checkbox" class="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary focus:ring-offset-0 transition cursor-pointer">
+                            <span class="text-xs text-slate-500 group-hover:text-slate-700 transition-colors">Ingat Saya</span>
+                        </label>
+                        <a href="#" class="text-xs font-semibold text-primary hover:text-primaryDark transition-colors">Lupa Akses?</a>
+                    </div>
+
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-slate-200 transition-all transform active:scale-[0.98] mt-2 flex items-center justify-center gap-2 group">
+                        <span>Masuk Aplikasi</span>
+                        <i class="fas fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
                     </button>
-                </div>
+                </form>
+            </div>
 
-                <div class="flex items-center justify-between mt-2">
-                    <label class="flex items-center gap-2 cursor-pointer touch-manipulation">
-                        <input type="checkbox" class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
-                        <span class="text-xs text-gray-500">Ingat Saya</span>
-                    </label>
-                    <a href="#" class="text-xs font-semibold text-primary hover:text-primaryDark">Lupa PIN?</a>
-                </div>
-
-                <button type="submit" class="w-full bg-primary hover:bg-primaryDark text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition transform active:scale-[0.98] mt-4 flex items-center justify-center gap-2 touch-manipulation">
-                    <span>Masuk</span>
-                    <i class="fas fa-arrow-right text-sm opacity-70"></i>
+            <!-- Bottom Section -->
+            <div class="mt-8 text-center animate-fade-in" style="animation-delay: 0.2s">
+                <button onclick="alert('Fitur Biometrik akan tersedia di versi Native')" class="p-4 rounded-full bg-white border border-slate-100 text-slate-400 hover:text-primary hover:border-primary/30 hover:shadow-md transition-all active:scale-95 group">
+                    <i class="fas fa-fingerprint text-2xl group-hover:scale-110 transition-transform"></i>
                 </button>
-            </form>
+                <p class="text-[10px] text-slate-400 mt-3 font-medium tracking-wide uppercase">Login Biometrik</p>
+                
+                <div class="mt-8 text-[10px] text-slate-300">
+                    Versi 3.2 • Secure Connection
+                </div>
+            </div>
         </div>
     </section>
 
     <!-- ================== APP VIEW (HIDDEN BY DEFAULT) ================== -->
-    <section id="app-view" class="hidden h-full flex flex-col animate-fade-in relative">
+    <section id="app-view" class="hidden h-full flex flex-col animate-fade-in relative bg-slate-50">
         
         <!-- Header -->
-        <header class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm z-10 shrink-0">
+        <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm z-10 shrink-0 sticky top-0">
             <div>
-                <h1 class="text-xl font-bold text-gray-900 tracking-tight">DompetKu</h1>
-                <p class="text-xs text-gray-500 flex items-center gap-1">
+                <h1 class="text-lg font-bold text-slate-900 tracking-tight">DompetKu</h1>
+                <p class="text-[10px] text-slate-500 flex items-center gap-1 font-medium">
                     <span id="current-date">Memuat...</span>
                     <span id="offline-indicator" class="hidden text-orange-500 font-bold ml-1">• Offline</span>
                 </p>
             </div>
             <div class="flex gap-2">
-                 <button onclick="fetchData(true)" class="p-2 w-10 h-10 rounded-full hover:bg-gray-100 active:bg-gray-200 transition flex items-center justify-center">
-                    <i class="fas fa-sync-alt text-gray-600 text-sm" id="refresh-icon"></i>
+                 <button onclick="fetchData(true)" class="p-2 w-9 h-9 rounded-full bg-slate-50 border border-slate-200 hover:bg-slate-100 active:bg-slate-200 transition flex items-center justify-center text-slate-600">
+                    <i class="fas fa-sync-alt text-xs" id="refresh-icon"></i>
                 </button>
-                <button onclick="handleLogout()" class="p-2 w-10 h-10 rounded-full bg-red-50 hover:bg-red-100 text-red-600 active:bg-red-200 transition flex items-center justify-center">
-                    <i class="fas fa-power-off text-sm"></i>
+                <button onclick="handleLogout()" class="p-2 w-9 h-9 rounded-full bg-red-50 border border-red-100 hover:bg-red-100 text-red-600 active:bg-red-200 transition flex items-center justify-center">
+                    <i class="fas fa-power-off text-xs"></i>
                 </button>
             </div>
         </header>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto no-scrollbar relative p-4 pb-32 w-full" id="main-container">
+        <main class="flex-1 overflow-y-auto no-scrollbar relative p-4 pb-32 w-full max-w-md mx-auto" id="main-container">
             
             <!-- Dashboard View -->
             <div id="view-dashboard">
                 <div class="grid grid-cols-1 gap-4 mb-6">
-                    <div class="bg-gradient-to-r from-indigo-600 to-blue-500 rounded-2xl p-5 text-white shadow-lg shadow-indigo-200 relative overflow-hidden">
-                        <div class="absolute right-0 top-0 opacity-10 transform translate-x-4 -translate-y-4">
+                    <!-- Balance Card -->
+                    <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-[1.5rem] p-6 text-white shadow-xl shadow-indigo-200 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform duration-700">
                             <i class="fas fa-wallet text-9xl"></i>
                         </div>
-                        <p class="text-indigo-100 text-sm font-medium mb-1 relative z-10">Saldo Saat Ini</p>
-                        <h2 class="text-4xl font-bold tracking-tight relative z-10" id="total-balance">Rp 0</h2>
+                        <div class="relative z-10">
+                            <p class="text-indigo-200 text-xs font-medium mb-1 tracking-wide uppercase">Saldo Total</p>
+                            <h2 class="text-3xl font-bold tracking-tight" id="total-balance">Rp 0</h2>
+                        </div>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="bg-white p-4 rounded-2xl shadow-soft border border-slate-100">
                             <div class="flex items-center gap-2 mb-2">
-                                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
-                                    <i class="fas fa-arrow-down text-xs"></i>
+                                <div class="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
+                                    <i class="fas fa-arrow-down text-[10px]"></i>
                                 </div>
-                                <span class="text-xs text-gray-500 font-medium truncate">Pemasukan</span>
+                                <span class="text-xs text-slate-500 font-medium truncate">Masuk</span>
                             </div>
-                            <p class="text-lg font-bold text-gray-800 truncate" id="total-income">Rp 0</p>
+                            <p class="text-base font-bold text-slate-800 truncate" id="total-income">Rp 0</p>
                         </div>
-                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="bg-white p-4 rounded-2xl shadow-soft border border-slate-100">
                             <div class="flex items-center gap-2 mb-2">
-                                <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
-                                    <i class="fas fa-arrow-up text-xs"></i>
+                                <div class="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+                                    <i class="fas fa-arrow-up text-[10px]"></i>
                                 </div>
-                                <span class="text-xs text-gray-500 font-medium truncate">Pengeluaran</span>
+                                <span class="text-xs text-slate-500 font-medium truncate">Keluar</span>
                             </div>
-                            <p class="text-lg font-bold text-gray-800 truncate" id="total-expense">Rp 0</p>
+                            <p class="text-base font-bold text-slate-800 truncate" id="total-expense">Rp 0</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Search & Filter & Edit Toggle -->
-                <div class="mb-4 sticky top-0 bg-surface/95 backdrop-blur py-2 z-10 space-y-3">
+                <div class="mb-4 sticky top-0 pt-2 pb-2 bg-slate-50/95 backdrop-blur z-20 space-y-3">
                     <div class="flex gap-2 items-center">
-                        <div class="relative flex-1">
-                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
-                            <input type="text" id="search-input" onkeyup="renderHistory()" placeholder="Cari transaksi..." class="w-full bg-white border border-gray-200 rounded-full pl-9 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-shadow">
+                        <div class="relative flex-1 group">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs group-focus-within:text-primary transition-colors"></i>
+                            <input type="text" id="search-input" onkeyup="renderHistory()" placeholder="Cari transaksi..." class="w-full bg-white border border-slate-200 rounded-full pl-9 pr-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm transition-all">
                         </div>
                         <div class="relative">
-                            <select id="month-filter" onchange="renderHistory()" class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm rounded-full pl-4 pr-8 py-2 outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm h-full max-w-[100px] truncate">
+                            <select id="month-filter" onchange="renderHistory()" class="appearance-none bg-white border border-slate-200 text-slate-600 text-xs font-medium rounded-full pl-4 pr-8 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm h-full max-w-[110px] truncate transition-all">
                                 <!-- Populated by JS -->
                             </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <i class="fas fa-chevron-down text-xs"></i>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                                <i class="fas fa-chevron-down text-[10px]"></i>
                             </div>
                         </div>
-                        <!-- NEW: Toggle Edit Mode Button -->
-                        <button onclick="toggleEditMode()" id="edit-mode-btn" class="bg-white border border-gray-200 text-gray-600 w-10 h-10 rounded-full shadow-sm hover:bg-gray-50 active:bg-gray-200 transition flex items-center justify-center shrink-0">
-                            <i class="fas fa-pen text-sm"></i>
+                        <!-- Toggle Edit Mode Button -->
+                        <button onclick="toggleEditMode()" id="edit-mode-btn" class="bg-white border border-slate-200 text-slate-500 w-10 h-10 rounded-full shadow-sm hover:bg-slate-50 hover:text-slate-800 active:bg-slate-100 transition flex items-center justify-center shrink-0">
+                            <i class="fas fa-pen text-xs"></i>
                         </button>
                     </div>
                     <!-- Select All Helper (Hidden by default) -->
-                    <div id="edit-helper" class="hidden flex justify-between items-center px-2 text-xs text-gray-500 animate-fade-in">
+                    <div id="edit-helper" class="hidden flex justify-between items-center px-2 text-[10px] text-slate-500 animate-fade-in font-medium">
                         <span>Pilih item untuk dihapus</span>
-                        <button onclick="toggleSelectAll()" class="text-primary font-bold">Pilih Semua</button>
+                        <button onclick="toggleSelectAll()" class="text-primary hover:text-primaryDark transition-colors">Pilih Semua</button>
                     </div>
                 </div>
 
                 <div id="transaction-list" class="space-y-3 pb-safe">
-                    <div class="text-center py-10 text-gray-400">
-                        <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
-                        <p class="text-sm">Menyiapkan data...</p>
+                    <div class="text-center py-10 text-slate-300">
+                        <div class="loader border-slate-300 border-t-primary mx-auto mb-3"></div>
+                        <p class="text-xs">Menyiapkan data...</p>
                     </div>
                 </div>
             </div>
 
             <!-- Report View -->
-            <div id="view-report" class="hidden pb-safe space-y-6">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                    <h3 class="font-bold text-gray-800 mb-4">Analisis Bulan Ini</h3>
-                    <div class="h-64 relative">
+            <div id="view-report" class="hidden pb-safe space-y-5">
+                <div class="bg-white p-5 rounded-[1.5rem] shadow-soft border border-slate-100">
+                    <h3 class="font-bold text-slate-800 mb-4 text-sm">Analisis Bulan Ini</h3>
+                    <div class="h-56 relative">
                         <canvas id="chart-pie"></canvas>
                     </div>
                 </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                    <h3 class="font-bold text-gray-800 mb-4">Tren Harian</h3>
+                <div class="bg-white p-5 rounded-[1.5rem] shadow-soft border border-slate-100">
+                    <h3 class="font-bold text-slate-800 mb-4 text-sm">Tren Harian</h3>
                     <div class="h-48 relative">
                         <canvas id="chart-bar"></canvas>
                     </div>
@@ -288,78 +330,85 @@
 
         </main>
 
-        <!-- FAB (Main Add Button) - Hidden in Edit Mode -->
-        <button id="main-fab" onclick="openModal()" class="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,20px))] right-5 bg-gray-900 text-white w-14 h-14 rounded-full shadow-2xl shadow-gray-900/40 flex items-center justify-center text-2xl active:scale-90 transition-all duration-200 z-30 touch-manipulation">
+        <!-- FAB (Main Add Button) -->
+        <button id="main-fab" onclick="openModal()" class="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom,20px))] right-5 bg-slate-900 text-white w-14 h-14 rounded-full shadow-2xl shadow-slate-900/30 flex items-center justify-center text-xl active:scale-90 transition-all duration-300 z-30 touch-manipulation hover:rotate-90">
             <i class="fas fa-plus"></i>
         </button>
 
         <!-- Navigation -->
-        <nav class="glass border-t border-gray-200 fixed bottom-0 w-full z-40 pb-safe">
-            <div class="flex justify-around items-center h-16">
-                <button onclick="switchTab('home')" class="nav-btn active flex-1 flex flex-col items-center justify-center h-full gap-1 text-primary transition active:bg-gray-50" data-target="home">
-                    <i class="fas fa-home text-xl"></i>
-                    <span class="text-[10px] font-medium">Beranda</span>
+        <nav class="glass border-t border-slate-200 fixed bottom-0 w-full z-40 pb-safe shadow-[0_-5px_20px_rgba(0,0,0,0.02)]">
+            <div class="flex justify-around items-center h-16 max-w-md mx-auto">
+                <button onclick="switchTab('home')" class="nav-btn active flex-1 flex flex-col items-center justify-center h-full gap-1 text-primary transition active:scale-95" data-target="home">
+                    <i class="fas fa-home text-lg"></i>
+                    <span class="text-[10px] font-semibold">Beranda</span>
                 </button>
-                <button onclick="switchTab('hutang')" class="nav-btn flex-1 flex flex-col items-center justify-center h-full gap-1 text-gray-400 hover:text-gray-600 transition active:bg-gray-50" data-target="hutang">
-                    <i class="fas fa-hand-holding-usd text-xl"></i>
-                    <span class="text-[10px] font-medium">Hutang</span>
+                <button onclick="switchTab('hutang')" class="nav-btn flex-1 flex flex-col items-center justify-center h-full gap-1 text-slate-400 hover:text-slate-600 transition active:scale-95" data-target="hutang">
+                    <i class="fas fa-hand-holding-usd text-lg"></i>
+                    <span class="text-[10px] font-semibold">Hutang</span>
                 </button>
-                <button onclick="switchTab('laporan')" class="nav-btn flex-1 flex flex-col items-center justify-center h-full gap-1 text-gray-400 hover:text-gray-600 transition active:bg-gray-50" data-target="laporan">
-                    <i class="fas fa-chart-pie text-xl"></i>
-                    <span class="text-[10px] font-medium">Laporan</span>
+                <button onclick="switchTab('laporan')" class="nav-btn flex-1 flex flex-col items-center justify-center h-full gap-1 text-slate-400 hover:text-slate-600 transition active:scale-95" data-target="laporan">
+                    <i class="fas fa-chart-pie text-lg"></i>
+                    <span class="text-[10px] font-semibold">Laporan</span>
                 </button>
             </div>
         </nav>
     </section>
 
     <!-- Modal Input -->
-    <div id="modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300 flex items-end sm:items-center justify-center">
-        <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl p-6 transform transition-transform duration-300 translate-y-full sm:translate-y-0 shadow-2xl flex flex-col max-h-[90dvh]" id="modal-content">
-            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4 sm:hidden"></div>
+    <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300 flex items-end sm:items-center justify-center">
+        <div class="bg-white w-full sm:max-w-md rounded-t-[2rem] sm:rounded-[2rem] p-6 transform transition-transform duration-300 translate-y-full sm:translate-y-0 shadow-2xl flex flex-col max-h-[90dvh]" id="modal-content">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 sm:hidden"></div>
             <div class="flex justify-between items-center mb-6 shrink-0">
-                <h3 class="text-xl font-bold text-gray-900">Tambah Transaksi</h3>
-                <button onclick="closeModal()" class="p-2 -mr-2 text-gray-400 hover:text-gray-600 active:text-gray-900">
-                    <i class="fas fa-times text-xl"></i>
+                <h3 class="text-lg font-bold text-slate-900">Catat Transaksi</h3>
+                <button onclick="closeModal()" class="p-2 -mr-2 text-slate-400 hover:text-slate-600 active:text-slate-900 transition-colors">
+                    <i class="fas fa-times text-lg"></i>
                 </button>
             </div>
             <form id="transaction-form" onsubmit="submitForm(event)" class="overflow-y-auto no-scrollbar pb-safe">
-                <div class="space-y-5">
-                    <div class="grid grid-cols-4 gap-2 bg-gray-100 p-1.5 rounded-xl">
+                <div class="space-y-6">
+                    <!-- Type Selector -->
+                    <div class="grid grid-cols-4 gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
                         <label class="cursor-pointer touch-manipulation">
                             <input type="radio" name="tipe" value="Masuk" class="peer hidden" checked>
-                            <div class="peer-checked:bg-white peer-checked:text-green-600 peer-checked:shadow-sm py-2.5 text-center rounded-lg text-xs font-bold text-gray-500 transition-all">Masuk</div>
+                            <div class="peer-checked:bg-white peer-checked:text-green-600 peer-checked:shadow-sm peer-checked:ring-1 peer-checked:ring-black/5 py-2.5 text-center rounded-lg text-[10px] sm:text-xs font-bold text-slate-400 transition-all">Masuk</div>
                         </label>
                         <label class="cursor-pointer touch-manipulation">
                             <input type="radio" name="tipe" value="Keluar" class="peer hidden">
-                            <div class="peer-checked:bg-white peer-checked:text-red-600 peer-checked:shadow-sm py-2.5 text-center rounded-lg text-xs font-bold text-gray-500 transition-all">Keluar</div>
+                            <div class="peer-checked:bg-white peer-checked:text-red-600 peer-checked:shadow-sm peer-checked:ring-1 peer-checked:ring-black/5 py-2.5 text-center rounded-lg text-[10px] sm:text-xs font-bold text-slate-400 transition-all">Keluar</div>
                         </label>
                         <label class="cursor-pointer touch-manipulation">
                             <input type="radio" name="tipe" value="Hutang" class="peer hidden">
-                            <div class="peer-checked:bg-white peer-checked:text-orange-600 peer-checked:shadow-sm py-2.5 text-center rounded-lg text-xs font-bold text-gray-500 transition-all">Hutang</div>
+                            <div class="peer-checked:bg-white peer-checked:text-orange-600 peer-checked:shadow-sm peer-checked:ring-1 peer-checked:ring-black/5 py-2.5 text-center rounded-lg text-[10px] sm:text-xs font-bold text-slate-400 transition-all">Hutang</div>
                         </label>
                         <label class="cursor-pointer touch-manipulation">
                             <input type="radio" name="tipe" value="Lainnya" class="peer hidden">
-                            <div class="peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm py-2.5 text-center rounded-lg text-xs font-bold text-gray-500 transition-all">Lainnya</div>
+                            <div class="peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm peer-checked:ring-1 peer-checked:ring-black/5 py-2.5 text-center rounded-lg text-[10px] sm:text-xs font-bold text-slate-400 transition-all">Lainnya</div>
                         </label>
                     </div>
+
+                    <!-- Amount Input -->
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Jumlah (Rp)</label>
-                        <input type="tel" inputmode="numeric" name="jumlah" required class="w-full text-3xl font-bold text-gray-900 border-b-2 border-gray-200 focus:border-indigo-600 outline-none py-2 placeholder-gray-300 transition bg-transparent" placeholder="0">
-                    </div>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Tanggal</label>
-                            <input type="date" name="tanggal" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                        <label class="block text-xs font-semibold text-slate-500 mb-2 ml-1">Jumlah Nominal</label>
+                        <div class="relative">
+                            <span class="absolute left-0 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">Rp</span>
+                            <input type="tel" inputmode="numeric" name="jumlah" required class="w-full text-3xl font-bold text-slate-800 border-b border-slate-200 focus:border-primary outline-none py-2 pl-8 placeholder-slate-200 transition bg-transparent" placeholder="0">
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Keterangan</label>
-                            <input type="text" name="keterangan" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" placeholder="Contoh: Makan Siang">
+                    </div>
+
+                    <!-- Details -->
+                    <div class="space-y-4">
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-slate-500 ml-1">Tanggal</label>
+                            <input type="date" name="tanggal" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition text-slate-700 font-medium">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-semibold text-slate-500 ml-1">Keterangan</label>
+                            <input type="text" name="keterangan" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition text-slate-700 font-medium" placeholder="Contoh: Makan Siang">
                         </div>
                     </div>
                 </div>
-                <button type="submit" id="submit-btn" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-xl mt-8 shadow-lg transition transform active:scale-[0.98] flex justify-center items-center gap-2 touch-manipulation mb-2">
-                    <span>Simpan Transaksi</span>
-                    <div id="btn-loader" class="loader border-t-white border-gray-500 hidden" style="width: 18px; height: 18px; border-width: 2px;"></div>
+                <button type="submit" id="submit-btn" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl mt-8 shadow-lg shadow-slate-200 transition transform active:scale-[0.98] flex justify-center items-center gap-2 touch-manipulation mb-2">
+                    <span>Simpan</span>
                 </button>
             </form>
         </div>
@@ -367,7 +416,6 @@
 
     <script>
         // ================= CONFIGURATION =================
-        // PASTE URL BARU DARI GOOGLE SCRIPT ANDA DI SINI
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzkVDFQGadQlKCE79pAv9pNu_ROuzNOu8AV1k0tvqvEzGI7xibMSHtIPo9KK9ePrrDv/exec"; 
         // =================================================
 
@@ -375,10 +423,8 @@
         let pieChart = null;
         let barChart = null;
         
-        // --- NEW VARIABLES FOR EDIT MODE ---
         let isEditMode = false;
         let selectedIds = new Set();
-        // -----------------------------------
 
         // --- Auth Logic ---
         
@@ -393,18 +439,16 @@
 
         function handleLogin(e) {
             e.preventDefault();
-            // SIMULASI LOGIN - Ganti logika ini jika punya backend real
             const email = document.getElementById('email').value;
             const pass = document.getElementById('password').value;
 
-            if (email && pass) { // Terima input apapun untuk demo
+            if (email && pass) {
                 const btn = e.target.querySelector('button[type="submit"]');
                 const originalText = btn.innerHTML;
                 
                 btn.disabled = true;
-                btn.innerHTML = '<div class="loader" style="width:20px;height:20px;border-color:white;border-top-color:transparent"></div>';
+                btn.innerHTML = '<div class="loader"></div>';
                 
-                // Simulate network delay
                 setTimeout(() => {
                     localStorage.setItem('dompetku_auth', 'true');
                     showApp();
@@ -425,8 +469,6 @@
             document.getElementById('login-view').classList.add('hidden');
             const appView = document.getElementById('app-view');
             appView.classList.remove('hidden');
-            
-            // Init App Logic ONLY when shown
             initApp();
         }
 
@@ -500,25 +542,21 @@
             }
         }
 
-        // --- Transaksi Logic (Sama seperti sebelumnya) ---
+        // --- Transaksi Logic ---
 
         async function submitForm(e) {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            const loader = document.getElementById('btn-loader');
-            const btnText = btn.querySelector('span');
-
+            const originalText = btn.innerHTML;
+            
             btn.disabled = true;
-            btnText.textContent = 'Menyimpan...';
-            loader.classList.remove('hidden');
+            btn.innerHTML = '<div class="loader border-slate-400 border-t-white"></div>';
 
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
-            
             data.status = (data.tipe === 'Hutang') ? 'Belum Lunas' : '-';
 
             try {
-                // Post data
                 const response = await fetch(`${WEB_APP_URL}?action=create`, {
                     method: 'POST',
                     body: JSON.stringify(data)
@@ -530,7 +568,7 @@
                     closeModal();
                     e.target.reset();
                     document.querySelector('input[name="tanggal"]').value = new Date().toISOString().split('T')[0];
-                    fetchData(true); // Reload data dari server
+                    fetchData(true); 
                 } else {
                     throw new Error(result.message);
                 }
@@ -538,8 +576,7 @@
                 showToast('Gagal: ' + error.message, 'error');
             } finally {
                 btn.disabled = false;
-                btnText.textContent = 'Simpan Transaksi';
-                loader.classList.add('hidden');
+                btn.innerHTML = originalText;
             }
         }
 
@@ -566,7 +603,7 @@
             }
         }
 
-        // --- NEW: DELETE LOGIC (IMPROVED) ---
+        // --- DELETE LOGIC ---
 
         function toggleEditMode() {
             isEditMode = !isEditMode;
@@ -577,12 +614,12 @@
             if (isEditMode) {
                 btn.classList.add('bg-red-50', 'text-red-600', 'border-red-200');
                 btn.innerHTML = '<i class="fas fa-times"></i>';
-                fab.classList.add('scale-0'); // Hide FAB
+                fab.classList.add('scale-0'); 
                 helper.classList.remove('hidden');
             } else {
                 btn.classList.remove('bg-red-50', 'text-red-600', 'border-red-200');
-                btn.innerHTML = '<i class="fas fa-pen text-sm"></i>';
-                fab.classList.remove('scale-0'); // Show FAB
+                btn.innerHTML = '<i class="fas fa-pen text-xs"></i>';
+                fab.classList.remove('scale-0'); 
                 helper.classList.add('hidden');
                 selectedIds.clear();
                 updateDeleteBar();
@@ -592,21 +629,18 @@
 
         function toggleSelection(id) {
             if (!isEditMode) return;
-            
             if (selectedIds.has(id)) {
                 selectedIds.delete(id);
             } else {
                 selectedIds.add(id);
             }
-            
-            renderHistory(); // Re-render to show checkboxes state
+            renderHistory(); 
             updateDeleteBar();
         }
 
         function toggleSelectAll() {
             const visibleIds = getVisibleIds();
             const allSelected = visibleIds.every(id => selectedIds.has(id));
-
             if (allSelected) {
                 visibleIds.forEach(id => selectedIds.delete(id));
             } else {
@@ -628,9 +662,7 @@
         function updateDeleteBar() {
             const bar = document.getElementById('delete-bar');
             const count = document.getElementById('selected-count');
-            
             count.innerText = selectedIds.size;
-            
             if (selectedIds.size > 0) {
                 bar.classList.remove('translate-y-32');
             } else {
@@ -640,44 +672,34 @@
 
         async function deleteSelectedItems() {
             if (selectedIds.size === 0) return;
-            
-            // Konfirmasi sederhana namun jelas
             if (!confirm(`Yakin ingin menghapus ${selectedIds.size} item ini?`)) return;
 
             const idsToDelete = Array.from(selectedIds);
-            const originalData = [...rawData]; // Simpan cadangan untuk rollback
+            const originalData = [...rawData]; 
             
-            // 1. Optimistic Update (Hapus di layar dulu biar cepat)
-            // Ini membuat interaksi terasa instan bagi user
+            // Optimistic Update
             rawData = rawData.filter(item => !selectedIds.has(item.id));
             localStorage.setItem('dompetku_data', JSON.stringify(rawData));
             
-            // Update UI seolah-olah sudah sukses
-            toggleEditMode(); // Keluar mode edit otomatis agar rapi
+            toggleEditMode(); 
             showToast('Menghapus...', 'success');
 
-            // 2. Kirim ke Backend (Background Process)
             try {
                 const response = await fetch(`${WEB_APP_URL}?action=delete`, {
                     method: 'POST',
                     body: JSON.stringify({ ids: idsToDelete })
                 });
-                
                 const result = await response.json();
-
                 if (result.status === 'success') {
-                    // Sukses di server, sinkronisasi selesai
                     console.log('Sync delete success');
                 } else {
                     throw new Error(result.message || 'Gagal menghapus di server');
                 }
-
             } catch (error) {
                 console.error("Delete failed", error);
-                // 3. Rollback jika gagal (Kembalikan data ke kondisi semula)
                 rawData = originalData;
                 localStorage.setItem('dompetku_data', JSON.stringify(rawData));
-                renderHistory(); // Render ulang data lama
+                renderHistory(); 
                 showToast('Gagal! Data dikembalikan.', 'error');
             }
         }
@@ -734,17 +756,17 @@
             }
 
             if (filteredData.length === 0) {
-                container.innerHTML = `<div class="flex flex-col items-center justify-center py-10 text-gray-400"><i class="fas fa-receipt text-4xl mb-3 opacity-20"></i><p class="text-sm">Kosong</p></div>`;
+                container.innerHTML = `<div class="flex flex-col items-center justify-center py-12 text-slate-300"><i class="fas fa-receipt text-3xl mb-3 opacity-20"></i><p class="text-xs">Belum ada transaksi</p></div>`;
                 return;
             }
 
             container.innerHTML = filteredData.map(item => {
                 const isExpense = item.tipe === 'Keluar' || item.tipe === 'Hutang';
                 const colorClass = isExpense ? 'text-red-600' : 'text-green-600';
-                const iconBg = isExpense ? 'bg-red-50' : 'bg-green-50';
+                const iconBg = isExpense ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600';
                 
                 const isSelected = selectedIds.has(item.id);
-                const selectStyle = isSelected ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100';
+                const selectStyle = isSelected ? 'bg-red-50 border-red-200' : 'bg-white border-slate-100';
                 
                 let leftContent = ``;
                 if (isEditMode) {
@@ -756,15 +778,15 @@
                 }
 
                 return `
-                <div id="container-${item.id}" onclick="isEditMode ? toggleSelection('${item.id}') : null" class="${selectStyle} p-4 rounded-xl shadow-sm border flex items-center justify-between active:bg-gray-50 transition-all duration-200 select-none cursor-pointer">
-                    <div class="flex items-center gap-2 overflow-hidden">
+                <div id="container-${item.id}" onclick="isEditMode ? toggleSelection('${item.id}') : null" class="${selectStyle} p-4 rounded-xl shadow-soft border flex items-center justify-between active:scale-[0.99] transition-all duration-200 select-none cursor-pointer">
+                    <div class="flex items-center gap-3 overflow-hidden">
                         ${leftContent}
-                        <div class="w-10 h-10 rounded-full ${iconBg} flex items-center justify-center ${colorClass} shrink-0 transition-transform ${isEditMode ? 'scale-90' : ''}">
-                            <i class="${getIcon(item.tipe)}"></i>
+                        <div class="w-10 h-10 rounded-full ${iconBg} flex items-center justify-center shrink-0 transition-transform ${isEditMode ? 'scale-90' : ''}">
+                            <i class="${getIcon(item.tipe)} text-sm"></i>
                         </div>
                         <div class="min-w-0">
-                            <p class="font-bold text-gray-800 text-sm truncate">${item.keterangan}</p>
-                            <p class="text-xs text-gray-400">${new Date(item.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} • ${item.tipe}</p>
+                            <p class="font-bold text-slate-800 text-sm truncate">${item.keterangan}</p>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5">${new Date(item.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} • ${item.tipe}</p>
                         </div>
                     </div>
                     <div class="text-right shrink-0 ml-2">
@@ -780,22 +802,22 @@
             if(search) debts = debts.filter(item => item.keterangan.toLowerCase().includes(search));
 
             if (debts.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 text-gray-400">Tidak ada hutang.</div>`;
+                container.innerHTML = `<div class="text-center py-10 text-slate-400 text-xs">Tidak ada data hutang.</div>`;
                 return;
             }
 
             container.innerHTML = debts.map(item => {
                 const isLunas = item.status === 'Lunas';
                 return `
-                <div id="card-${item.id}" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-3 relative overflow-hidden active:bg-gray-50 transition-colors">
-                    ${isLunas ? '<div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] px-2 py-1 rounded-bl-lg">LUNAS</div>' : ''}
+                <div id="card-${item.id}" class="bg-white p-4 rounded-xl shadow-soft border border-slate-100 mb-3 relative overflow-hidden active:scale-[0.99] transition-transform">
+                    ${isLunas ? '<div class="absolute top-0 right-0 bg-green-500 text-white text-[9px] font-bold px-2 py-1 rounded-bl-lg tracking-wider">LUNAS</div>' : ''}
                     <div class="flex justify-between items-start mb-2">
-                        <div class="min-w-0 pr-2"><h4 class="font-bold text-gray-800 truncate">${item.keterangan}</h4><p class="text-xs text-gray-500">${new Date(item.tanggal).toLocaleDateString('id-ID')}</p></div>
-                        <p class="font-bold text-red-600 shrink-0">${formatRupiah(item.jumlah)}</p>
+                        <div class="min-w-0 pr-2"><h4 class="font-bold text-slate-800 truncate text-sm">${item.keterangan}</h4><p class="text-[10px] text-slate-500 mt-0.5">${new Date(item.tanggal).toLocaleDateString('id-ID')}</p></div>
+                        <p class="font-bold text-red-600 shrink-0 text-sm">${formatRupiah(item.jumlah)}</p>
                     </div>
-                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-50">
-                        <span class="text-xs font-medium px-2 py-1 rounded ${isLunas ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${item.status}</span>
-                        ${!isLunas ? `<button onclick="markAsPaid('${item.id}')" class="text-xs bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 active:scale-95 transition shadow-md shadow-indigo-200">Lunasi</button>` : ''}
+                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-slate-50">
+                        <span class="text-[10px] font-bold px-2 py-1 rounded ${isLunas ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}">${item.status}</span>
+                        ${!isLunas ? `<button onclick="markAsPaid('${item.id}')" class="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg hover:bg-indigo-100 active:scale-95 transition">Lunasi</button>` : ''}
                     </div>
                 </div>`;
             }).join('');
@@ -818,10 +840,11 @@
                             data.filter(i => i.tipe === 'Hutang').reduce((a, b) => a + parseInt(b.jumlah), 0),
                         ],
                         backgroundColor: ['#10B981', '#EF4444', '#F59E0B'],
-                        borderWidth: 0
+                        borderWidth: 0,
+                        hoverOffset: 4
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: {size: 10} } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 10, family: "'Plus Jakarta Sans', sans-serif"} } } } }
             });
 
             const dailyData = {};
@@ -837,9 +860,9 @@
                 type: 'bar',
                 data: {
                     labels: sortedKeys,
-                    datasets: [{ label: 'Vol', data: sortedKeys.map(k => dailyData[k]), backgroundColor: '#4F46E5', borderRadius: 4 }]
+                    datasets: [{ label: 'Vol', data: sortedKeys.map(k => dailyData[k]), backgroundColor: '#4338ca', borderRadius: 6, barThickness: 12 }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { display: false }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { font: {size: 9} } } }, plugins: { legend: { display: false } } }
             });
         }
 
@@ -873,24 +896,22 @@
         function switchTab(target) {
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 if(btn.dataset.target === target) {
-                    btn.classList.add('active', 'text-primary'); btn.classList.remove('text-gray-400');
-                    btn.querySelector('i').classList.add('text-primary'); btn.querySelector('i').classList.remove('text-gray-400');
+                    btn.classList.add('active', 'text-primary'); btn.classList.remove('text-slate-400');
+                    btn.querySelector('i').classList.add('text-primary'); btn.querySelector('i').classList.remove('text-slate-400');
                 } else {
-                    btn.classList.remove('active', 'text-primary'); btn.classList.add('text-gray-400');
-                    btn.querySelector('i').classList.remove('text-primary'); btn.querySelector('i').classList.add('text-gray-400');
+                    btn.classList.remove('active', 'text-primary'); btn.classList.add('text-slate-400');
+                    btn.querySelector('i').classList.remove('text-primary'); btn.querySelector('i').classList.add('text-slate-400');
                 }
             });
             document.getElementById('view-dashboard').classList.toggle('hidden', target === 'laporan');
             document.getElementById('view-report').classList.toggle('hidden', target !== 'laporan');
             
-            // Turn off edit mode when switching tabs
             if (isEditMode) toggleEditMode();
             else renderHistory();
         }
 
         document.getElementById('modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
         
-        // --- START ---
         document.addEventListener('DOMContentLoaded', checkAuth);
 
     </script>
