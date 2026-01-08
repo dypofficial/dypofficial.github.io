@@ -261,7 +261,7 @@
             const month = String(today.getMonth() + 1).padStart(2, '0');
             document.getElementById('monthFilter').value = `${year}-${month}`;
 
-            if (GOOGLE_SCRIPT_URL === "") {
+            if (GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbxX6XpptFEW32cfhoK_KSP0sDVe0uTQ8gQIqsFY9n60verz0uXmADRuUUSAsRB4ogE4/exec") {
                 document.getElementById('connectionStatus').textContent = "Demo Mode";
                 loadLocalData();
             } else {
@@ -409,7 +409,7 @@
             // Hanya bekerja optimal di Mode Demo (Local Storage)
             // Untuk Online Mode, memerlukan Script Google Apps yang mendukung fitur 'Edit'
             
-            if (GOOGLE_SCRIPT_URL !== "") {
+            if (GOOGLE_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbxX6XpptFEW32cfhoK_KSP0sDVe0uTQ8gQIqsFY9n60verz0uXmADRuUUSAsRB4ogE4/exec") {
                 alert("Fitur ubah status hutang hanya tersimpan di browser (Lokal) karena API saat ini hanya mendukung penambahan data (Append Only).");
             }
 
@@ -500,7 +500,7 @@
                 status: initialStatus 
             };
 
-            if (GOOGLE_SCRIPT_URL === "") {
+            if (GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbxX6XpptFEW32cfhoK_KSP0sDVe0uTQ8gQIqsFY9n60verz0uXmADRuUUSAsRB4ogE4/exec") {
                 setTimeout(() => {
                     transactions.push(data);
                     localStorage.setItem('finsaku_data', JSON.stringify(transactions));
