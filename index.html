@@ -796,12 +796,38 @@
             let debts = data.filter(item => item.tipe === 'Hutang');
             if(search) debts = debts.filter(item => item.keterangan.toLowerCase().includes(search));
 
+            // Perhitungan Total
+            const totalHutang = debts.reduce((sum, item) => sum + parseInt(item.jumlah), 0);
+            const totalBelumLunas = debts.filter(item => item.status === 'Belum Lunas').reduce((sum, item) => sum + parseInt(item.jumlah), 0);
+
+            // HTML untuk Kartu Total
+            const summaryCard = `
+                <div class="bg-gradient-to-br from-orange-500 to-red-500 rounded-[1.5rem] p-6 text-white shadow-xl shadow-orange-200 relative overflow-hidden mb-6 animate-fade-in">
+                    <div class="absolute right-0 top-0 opacity-20 transform translate-x-4 -translate-y-4">
+                        <i class="fas fa-file-invoice-dollar text-9xl"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-orange-100 text-xs font-medium mb-1 tracking-wide uppercase">Sisa Belum Lunas</p>
+                                <h2 class="text-3xl font-bold tracking-tight mb-4">${formatRupiah(totalBelumLunas)}</h2>
+                            </div>
+                        </div>
+                        <div class="pt-3 border-t border-white/20 flex justify-between items-center">
+                            <span class="text-xs font-medium text-orange-50">Total Tercatat</span>
+                            <span class="font-bold text-sm">${formatRupiah(totalHutang)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
             if (debts.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 text-slate-400 text-xs">Tidak ada data hutang.</div>`;
+                // Tampilkan summary card dengan nilai 0 jika tidak ada data
+                container.innerHTML = summaryCard + `<div class="text-center py-10 text-slate-400 text-xs">Tidak ada data hutang.</div>`;
                 return;
             }
 
-            container.innerHTML = debts.map(item => {
+            const listHtml = debts.map(item => {
                 const isLunas = item.status === 'Lunas';
                 return `
                 <div id="card-${item.id}" class="bg-white p-4 rounded-xl shadow-soft border border-slate-100 mb-3 relative overflow-hidden active:scale-[0.99] transition-transform">
@@ -816,6 +842,8 @@
                     </div>
                 </div>`;
             }).join('');
+
+            container.innerHTML = summaryCard + listHtml;
         }
 
         function renderReports(data) {
