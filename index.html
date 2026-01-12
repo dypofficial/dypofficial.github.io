@@ -191,7 +191,7 @@
             </div>
             <div class="mt-8 text-center animate-fade-in" style="animation-delay: 0.2s">
                 <div class="text-[10px] text-slate-400 font-medium">
-                    Versi 3.4 • Dengan Menu Piutang
+                    Versi 3.5 • Ringkasan Hutang
                 </div>
             </div>
         </div>
@@ -795,18 +795,44 @@
             }).join('');
         }
 
-        // Render List Hutang (Existing System preserved)
+        // Render List Hutang (Updated with Summary)
         function renderDebtList(data, search, type) {
             const container = document.getElementById('transaction-list');
             let debts = data.filter(item => item.tipe === type);
             if(search) debts = debts.filter(item => item.keterangan.toLowerCase().includes(search));
 
+            // Hitung Total Hutang
+            const totalHutang = debts.reduce((acc, curr) => acc + parseInt(curr.jumlah), 0);
+            const totalBelumLunas = debts.filter(p => p.status !== 'Lunas').reduce((acc, curr) => acc + parseInt(curr.jumlah), 0);
+            const totalSudahLunas = totalHutang - totalBelumLunas;
+
+            let html = `
+            <!-- Summary Card for Hutang -->
+            <div class="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-4 text-white shadow-lg shadow-orange-200 mb-4">
+                <div class="flex justify-between items-end mb-2">
+                    <div>
+                        <p class="text-[10px] text-orange-100 font-medium">Total Hutang</p>
+                        <h2 class="text-xl font-bold">${formatRupiah(totalHutang)}</h2>
+                    </div>
+                    <div class="text-right">
+                         <p class="text-[10px] text-orange-100 font-medium">Sisa Tagihan</p>
+                         <p class="font-bold text-white">${formatRupiah(totalBelumLunas)}</p>
+                    </div>
+                </div>
+                <div class="w-full bg-black/20 h-1.5 rounded-full overflow-hidden mt-1">
+                    <div class="bg-white h-full" style="width: ${totalHutang > 0 ? (totalSudahLunas/totalHutang)*100 : 0}%"></div>
+                </div>
+                <p class="text-[9px] text-orange-50 mt-1 text-right">${totalHutang > 0 ? Math.round((totalSudahLunas/totalHutang)*100) : 0}% Lunas</p>
+            </div>
+            `;
+
             if (debts.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 text-slate-400 text-xs">Tidak ada data ${type.toLowerCase()}.</div>`;
+                html += `<div class="text-center py-10 text-slate-400 text-xs">Tidak ada data ${type.toLowerCase()}.</div>`;
+                container.innerHTML = html;
                 return;
             }
 
-            container.innerHTML = debts.map(item => {
+            html += debts.map(item => {
                 const isLunas = item.status === 'Lunas';
                 return `
                 <div id="card-${item.id}" class="bg-white p-4 rounded-xl shadow-soft border border-slate-100 mb-3 relative overflow-hidden active:scale-[0.99] transition-transform">
@@ -821,6 +847,8 @@
                     </div>
                 </div>`;
             }).join('');
+            
+            container.innerHTML = html;
         }
 
         // NEW: Render List Piutang (Pengeluaran Piutang Detail)
