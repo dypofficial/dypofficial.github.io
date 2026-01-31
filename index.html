@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#064e3b"> <!-- Emerald Dark -->
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Dompet Modern + Piutang</title>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Dompet Ramadan</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Plus Jakarta Sans + Amiri (untuk sentuhan Arabesque) -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
@@ -22,28 +23,43 @@
                 extend: {
                     fontFamily: {
                         sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Amiri"', 'serif'],
                     },
                     colors: {
-                        primary: '#4338ca', // Indigo-700
-                        primaryLight: '#6366f1', // Indigo-500
-                        secondary: '#10B981',
-                        danger: '#EF4444',
-                        surface: '#F8FAFC',
-                        piutang: '#06b6d4' // Cyan-500 for Piutang
+                        primary: '#059669', // Emerald 600
+                        primaryDark: '#064e3b', // Emerald 900
+                        gold: '#fbbf24', // Amber 400
+                        goldDark: '#d97706', // Amber 600
+                        surface: '#f0fdf4', // Emerald 50
+                        accent: '#10b981', // Emerald 500
                     },
                     animation: {
-                        'fade-in': 'fadeIn 0.4s ease-out',
-                        'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
-                        'float': 'float 6s ease-in-out infinite'
+                        'float-slow': 'float 8s ease-in-out infinite',
+                        'float-medium': 'float 6s ease-in-out infinite',
+                        'twinkle': 'twinkle 4s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
                     },
                     keyframes: {
-                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
-                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } }
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
+                            '50%': { transform: 'translateY(-15px) rotate(2deg)' },
+                        },
+                        twinkle: {
+                            '0%, 100%': { opacity: '0.3', transform: 'scale(1)' },
+                            '50%': { opacity: '0.8', transform: 'scale(1.2)' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(40px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
                     },
-                    boxShadow: {
-                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
-                        'glow': '0 0 15px rgba(99, 102, 241, 0.3)'
+                    backgroundImage: {
+                        'islamic-pattern': "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
                     }
                 }
             }
@@ -53,258 +69,260 @@
         body { 
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior-y: none;
-            background-color: #F8FAFC;
+            background-color: #ecfdf5; /* Emerald 50 */
         }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .glass {
+        .glass-panel {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-
-        .loader {
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top: 2px solid #ffffff;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 0.8s linear infinite;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
         }
         
+        .card-gradient {
+            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
         
-        .custom-checkbox {
-            appearance: none;
-            background-color: #fff;
-            margin: 0;
-            font: inherit;
-            color: currentColor;
-            width: 1.25em;
-            height: 1.25em;
-            border: 2px solid #cbd5e1;
-            border-radius: 0.35em;
-            display: grid;
-            place-content: center;
-            transition: all 0.2s ease-in-out;
+        /* Lantern Shape using CSS */
+        .lantern-string {
+            width: 2px;
+            background: #d97706;
+            margin: 0 auto;
         }
-        .custom-checkbox::before {
-            content: "";
-            width: 0.65em;
-            height: 0.65em;
-            transform: scale(0);
-            transition: 120ms transform ease-in-out;
-            box-shadow: inset 1em 1em white;
-            transform-origin: center;
-            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        
+        /* Loading Animation */
+        .crescent-loader {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            box-shadow: inset -4px 0 0 2px #059669;
+            animation: spin 1.5s linear infinite;
         }
-        .custom-checkbox:checked {
-            background-color: #EF4444;
-            border-color: #EF4444;
-        }
-        .custom-checkbox:checked::before {
-            transform: scale(1);
-        }
-
-        .bg-pattern {
-            background-color: #F8FAFC;
-            background-image: radial-gradient(#E2E8F0 1px, transparent 1px);
-            background-size: 24px 24px;
-        }
-
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4783943446827198"
-     crossorigin="anonymous"></script>
-<body class="text-slate-800 font-sans h-[100dvh] w-full overflow-hidden text-sm sm:text-base">
 
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl z-[60] transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-3 w-max max-w-[90%] border border-slate-700">
-        <i id="toast-icon" class="fas fa-check-circle text-green-400"></i>
-        <span id="toast-message" class="text-sm font-medium truncate">Berhasil</span>
+<body class="text-slate-800 font-sans h-[100dvh] w-full overflow-hidden text-sm sm:text-base relative">
+
+    <!-- Background Decorations (Lanterns & Stars) -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <!-- Lantern 1 -->
+        <div class="absolute top-0 left-[15%] animate-float-slow">
+            <div class="lantern-string h-16"></div>
+            <div class="text-goldDark text-4xl drop-shadow-lg opacity-80"><i class="fas fa-mosque"></i></div>
+        </div>
+        <!-- Lantern 2 -->
+        <div class="absolute top-0 right-[20%] animate-float-medium" style="animation-delay: 1s">
+            <div class="lantern-string h-24"></div>
+            <div class="text-gold text-3xl drop-shadow-md opacity-90"><i class="fas fa-star-and-crescent"></i></div>
+        </div>
+         <!-- Moon -->
+         <div class="absolute top-10 right-[-20px] text-yellow-200/40 text-[150px] animate-twinkle blur-sm z-[-1]">
+            <i class="fas fa-moon"></i>
+        </div>
+        <!-- Stars -->
+        <div class="absolute top-1/4 left-10 text-gold/30 text-xs animate-twinkle" style="animation-delay: 0.5s"><i class="fas fa-star"></i></div>
+        <div class="absolute top-1/3 right-10 text-gold/30 text-sm animate-twinkle" style="animation-delay: 2s"><i class="fas fa-star"></i></div>
     </div>
 
-    <!-- Delete Floating Action Bar -->
-    <div id="delete-bar" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 glass px-6 py-3 rounded-full shadow-xl shadow-red-100/50 z-[50] transition-all duration-300 translate-y-32 flex items-center gap-4 border border-red-100">
-        <span class="text-sm font-bold text-slate-700"><span id="selected-count">0</span> Dipilih</span>
-        <div class="h-4 w-px bg-slate-300"></div>
-        <button id="btn-confirm-delete" onclick="deleteSelectedItems()" class="text-red-600 font-bold text-sm flex items-center gap-2 active:scale-95 transition hover:text-red-700">
-            <i class="fas fa-trash-alt"></i> Hapus
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed top-6 left-1/2 transform -translate-x-1/2 glass-panel bg-emerald-900/90 text-white px-5 py-3 rounded-full shadow-xl shadow-emerald-900/20 z-[70] transition-all duration-500 opacity-0 translate-y-[-20px] pointer-events-none flex items-center gap-3 w-max border border-emerald-700/50">
+        <div class="w-6 h-6 rounded-full bg-gold flex items-center justify-center text-emerald-900 shadow-lg">
+            <i id="toast-icon" class="fas fa-check text-[10px]"></i>
+        </div>
+        <span id="toast-message" class="text-xs font-bold font-sans tracking-wide">Alhamdulillah, Tersimpan</span>
+    </div>
+
+    <!-- Delete Bar -->
+    <div id="delete-bar" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-xl border border-red-100 text-slate-800 px-4 py-2 pr-6 rounded-full shadow-2xl z-[50] transition-all duration-500 translate-y-40 flex items-center gap-4">
+        <div class="bg-red-50 text-red-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-xs shadow-inner">
+            <span id="selected-count">0</span>
+        </div>
+        <button id="btn-confirm-delete" onclick="deleteSelectedItems()" class="text-red-500 font-bold text-xs uppercase tracking-wider flex items-center gap-2 active:scale-95 transition">
+            <i class="fas fa-trash-alt"></i> Hapus Data
         </button>
     </div>
 
     <!-- ================== LOGIN VIEW ================== -->
-    <section id="login-view" class="h-full w-full flex flex-col items-center justify-center p-6 bg-pattern absolute inset-0 z-50 overflow-hidden">
-        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-float"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-float" style="animation-delay: 2s"></div>
+    <section id="login-view" class="h-full w-full flex flex-col items-center justify-center p-6 absolute inset-0 z-50 overflow-hidden bg-gradient-to-b from-emerald-900 to-emerald-800">
+        <!-- Islamic Pattern Overlay -->
+        <div class="absolute inset-0 bg-islamic-pattern opacity-10"></div>
 
-        <div class="w-full max-w-[360px] flex flex-col items-center relative z-10 animate-slide-up">
-            <div class="w-full bg-white/70 backdrop-blur-xl border border-white/50 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8">
-                <div class="flex flex-col items-center mb-8">
-                    <div class="w-16 h-16 bg-gradient-to-tr from-primary to-primaryLight rounded-2xl flex items-center justify-center shadow-glow mb-4 rotate-3 hover:rotate-6 transition-transform duration-300">
-                        <i class="fas fa-wallet text-2xl text-white -rotate-3"></i>
-                    </div>
-                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">DompetKu</h1>
-                    <p class="text-slate-500 text-xs font-medium mt-1">Kelola finansial dengan presisi</p>
+        <div class="w-full max-w-[340px] flex flex-col items-center relative z-10 animate-slide-up">
+            <!-- Icon -->
+            <div class="w-24 h-24 bg-gradient-to-tr from-emerald-600 to-teal-500 rounded-full flex items-center justify-center shadow-2xl shadow-emerald-900/50 mb-6 border-4 border-emerald-400/20 relative group">
+                <div class="absolute inset-0 rounded-full border border-gold/40 animate-spin-slow" style="animation-duration: 10s"></div>
+                <i class="fas fa-kaaba text-4xl text-white drop-shadow-md"></i>
+            </div>
+
+            <div class="glass-panel w-full p-8 rounded-3xl shadow-2xl relative overflow-hidden bg-white/95 border-0">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-serif font-bold text-emerald-900">Dompet Ramadan</h1>
+                    <p class="text-emerald-600/80 text-xs font-medium mt-1 uppercase tracking-widest">Kelola Keuangan Penuh Berkah</p>
                 </div>
 
-                <form onsubmit="handleLogin(event)" class="space-y-5">
-                    <div class="space-y-1.5">
-                        <label for="email" class="text-xs font-semibold text-slate-600 ml-1">Email</label>
-                        <div class="relative group">
+                <form onsubmit="handleLogin(event)" class="space-y-4">
+                    <div class="space-y-1.5 group">
+                        <label class="text-[10px] font-bold text-emerald-700 uppercase ml-4">Email</label>
+                        <div class="relative transition-transform duration-300 group-focus-within:scale-[1.02]">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fas fa-envelope text-slate-400 group-focus-within:text-primary transition-colors"></i>
+                                <i class="fas fa-envelope text-emerald-300 group-focus-within:text-emerald-600 transition-colors"></i>
                             </div>
-                            <input type="email" id="email" class="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none text-sm font-medium shadow-sm" placeholder="nama@email.com" autocomplete="email" required value="admin@uangku.com">
+                            <input type="email" id="email" class="w-full pl-10 pr-4 py-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl text-emerald-900 placeholder-emerald-300 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all outline-none font-medium text-sm" placeholder="email@contoh.com" required value="admin@uangku.com">
                         </div>
                     </div>
 
-                    <div class="space-y-1.5">
-                        <div class="flex justify-between items-center ml-1">
-                            <label for="password" class="text-xs font-semibold text-slate-600">Password</label>
-                        </div>
-                        <div class="relative group">
+                    <div class="space-y-1.5 group">
+                        <label class="text-[10px] font-bold text-emerald-700 uppercase ml-4">Password</label>
+                        <div class="relative transition-transform duration-300 group-focus-within:scale-[1.02]">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fas fa-lock text-slate-400 group-focus-within:text-primary transition-colors"></i>
+                                <i class="fas fa-key text-emerald-300 group-focus-within:text-emerald-600 transition-colors"></i>
                             </div>
-                            <input type="password" id="password" class="w-full pl-11 pr-11 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none text-sm font-medium shadow-sm" placeholder="••••••••" autocomplete="current-password" required value="123456">
-                            <button type="button" onclick="togglePassword()" class="absolute right-0 top-0 bottom-0 px-4 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
+                            <input type="password" id="password" class="w-full pl-10 pr-10 py-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl text-emerald-900 placeholder-emerald-300 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all outline-none font-medium text-sm" placeholder="••••••••" required value="123456">
+                            <button type="button" onclick="togglePassword()" class="absolute right-0 top-0 bottom-0 px-4 text-emerald-400 hover:text-emerald-700 transition-colors focus:outline-none">
                                 <i class="fas fa-eye text-xs" id="eye-icon"></i>
                             </button>
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between pt-1">
-                        <label class="flex items-center gap-2 cursor-pointer touch-manipulation group">
-                            <input type="checkbox" class="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary focus:ring-offset-0 transition cursor-pointer">
-                            <span class="text-xs text-slate-500 group-hover:text-slate-700 transition-colors">Ingat Saya</span>
-                        </label>
-                        <a href="#" class="text-xs font-semibold text-primary hover:text-primaryDark transition-colors">Lupa Akses?</a>
-                    </div>
-
-                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-slate-200 transition-all transform active:scale-[0.98] mt-2 flex items-center justify-center gap-2 group">
-                        <span>Masuk Aplikasi</span>
-                        <i class="fas fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                    <button type="submit" class="w-full bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-emerald-700/30 mt-4 relative overflow-hidden group active:scale-[0.98] transition-all">
+                        <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+                        <span class="relative flex items-center justify-center gap-2">
+                            Buka Dompet <i class="fas fa-chevron-right text-xs"></i>
+                        </span>
                     </button>
                 </form>
             </div>
-            <div class="mt-8 text-center animate-fade-in" style="animation-delay: 0.2s">
-                <div class="text-[10px] text-slate-400 font-medium">
-                    Versi 3.5 • Ringkasan Hutang
-                </div>
-            </div>
+            <div class="mt-6 text-emerald-200/60 text-[10px] font-serif">Marhaban Ya Ramadhan</div>
         </div>
     </section>
 
     <!-- ================== APP VIEW ================== -->
-    <section id="app-view" class="hidden h-full flex flex-col animate-fade-in relative bg-slate-50">
+    <section id="app-view" class="hidden h-full flex flex-col relative z-10">
         
         <!-- Header -->
-        <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm z-10 shrink-0 sticky top-0">
-            <div>
-                <h1 class="text-lg font-bold text-slate-900 tracking-tight">DompetKu</h1>
-                <p class="text-[10px] text-slate-500 flex items-center gap-1 font-medium">
-                    <span id="current-date">Memuat...</span>
-                    <span id="offline-indicator" class="hidden text-orange-500 font-bold ml-1">• Offline</span>
-                </p>
-            </div>
-            <div class="flex gap-2">
-                 <button onclick="fetchData(true)" class="p-2 w-9 h-9 rounded-full bg-slate-50 border border-slate-200 hover:bg-slate-100 active:bg-slate-200 transition flex items-center justify-center text-slate-600">
-                    <i class="fas fa-sync-alt text-xs" id="refresh-icon"></i>
-                </button>
-                <button onclick="handleLogout()" class="p-2 w-9 h-9 rounded-full bg-red-50 border border-red-100 hover:bg-red-100 text-red-600 active:bg-red-200 transition flex items-center justify-center">
-                    <i class="fas fa-power-off text-xs"></i>
-                </button>
+        <header class="fixed top-0 w-full z-30 glass-panel border-b-0 border-white/20 pt-safe transition-all duration-300">
+            <div class="max-w-md mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-700 shadow-sm relative">
+                        <i class="fas fa-moon"></i>
+                        <div class="absolute -top-1 -right-1 text-gold text-xs animate-pulse"><i class="fas fa-star"></i></div>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-serif font-bold text-emerald-900 leading-none">DompetKu</h1>
+                        <p class="text-[10px] text-emerald-600 font-medium mt-1 flex items-center gap-1">
+                            <i class="far fa-calendar-alt"></i> <span id="current-date">...</span>
+                            <span id="offline-indicator" class="hidden w-1.5 h-1.5 bg-red-500 rounded-full animate-ping ml-1"></span>
+                        </p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                     <button onclick="fetchData(true)" class="w-9 h-9 rounded-full bg-white border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm active:scale-90 hover:bg-emerald-50 transition-all group">
+                        <i class="fas fa-sync-alt text-xs group-hover:rotate-180 transition-transform duration-500" id="refresh-icon"></i>
+                    </button>
+                    <button onclick="handleLogout()" class="w-9 h-9 rounded-full bg-red-50 border border-red-100 flex items-center justify-center text-red-400 active:scale-90 hover:bg-red-100 transition-all">
+                        <i class="fas fa-power-off text-xs"></i>
+                    </button>
+                </div>
             </div>
         </header>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto no-scrollbar relative p-4 pb-32 w-full max-w-md mx-auto" id="main-container">
+        <main class="flex-1 overflow-y-auto no-scrollbar relative pt-24 pb-32 w-full max-w-md mx-auto px-5" id="main-container">
             
             <!-- Dashboard View -->
-            <div id="view-dashboard">
-                <div class="grid grid-cols-1 gap-4 mb-6">
-                    <!-- Balance Card -->
-                    <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-[1.5rem] p-6 text-white shadow-xl shadow-indigo-200 relative overflow-hidden group">
-                        <div class="absolute right-0 top-0 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform duration-700">
-                            <i class="fas fa-wallet text-9xl"></i>
-                        </div>
-                        <div class="relative z-10">
-                            <p class="text-indigo-200 text-xs font-medium mb-1 tracking-wide uppercase">Saldo Total</p>
-                            <h2 class="text-3xl font-bold tracking-tight" id="total-balance">Rp 0</h2>
-                        </div>
-                    </div>
+            <div id="view-dashboard" class="animate-slide-up">
+                
+                <!-- Main Balance Card (Islamic Art Style) -->
+                <div class="relative w-full h-48 rounded-[2rem] overflow-hidden shadow-2xl shadow-emerald-700/20 mb-6 group transform transition hover:scale-[1.01] duration-500 card-gradient">
+                    <!-- Pattern BG -->
+                    <div class="absolute inset-0 bg-islamic-pattern opacity-10 mix-blend-overlay"></div>
+                    <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-gold/20 rounded-full blur-2xl"></div>
                     
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-white p-4 rounded-2xl shadow-soft border border-slate-100">
-                            <div class="flex items-center gap-2 mb-2">
-                                <div class="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
-                                    <i class="fas fa-arrow-down text-[10px]"></i>
-                                </div>
-                                <span class="text-xs text-slate-500 font-medium truncate">Masuk</span>
+                    <!-- Content -->
+                    <div class="relative z-10 p-6 h-full flex flex-col justify-between text-white">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-emerald-100/80 text-[10px] font-bold uppercase tracking-widest mb-1 font-sans">Total Saldo Bersih</p>
+                                <h2 class="text-3xl font-serif font-bold tracking-wide text-white drop-shadow-sm" id="total-balance">Rp 0</h2>
                             </div>
-                            <p class="text-base font-bold text-slate-800 truncate" id="total-income">Rp 0</p>
+                            <div class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/10">
+                                <i class="fas fa-wallet text-gold"></i>
+                            </div>
                         </div>
-                        <div class="bg-white p-4 rounded-2xl shadow-soft border border-slate-100">
-                            <div class="flex items-center gap-2 mb-2">
-                                <div class="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
-                                    <i class="fas fa-arrow-up text-[10px]"></i>
+                        
+                        <div class="flex gap-3 mt-2">
+                            <div class="flex-1 bg-emerald-900/30 backdrop-blur-md rounded-xl p-3 border border-emerald-400/20">
+                                <div class="flex items-center gap-1.5 mb-1">
+                                    <div class="w-1 h-3 bg-emerald-400 rounded-full"></div>
+                                    <span class="text-[10px] text-emerald-100 font-medium">Pemasukan</span>
                                 </div>
-                                <span class="text-xs text-slate-500 font-medium truncate">Keluar</span>
+                                <p class="font-bold text-sm truncate text-emerald-50" id="total-income">Rp 0</p>
                             </div>
-                            <p class="text-base font-bold text-slate-800 truncate" id="total-expense">Rp 0</p>
+                            <div class="flex-1 bg-emerald-900/30 backdrop-blur-md rounded-xl p-3 border border-emerald-400/20">
+                                <div class="flex items-center gap-1.5 mb-1">
+                                    <div class="w-1 h-3 bg-red-400 rounded-full"></div>
+                                    <span class="text-[10px] text-emerald-100 font-medium">Pengeluaran</span>
+                                </div>
+                                <p class="font-bold text-sm truncate text-red-50" id="total-expense">Rp 0</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Search & Filter & Edit Toggle -->
-                <div class="mb-4 sticky top-0 pt-2 pb-2 bg-slate-50/95 backdrop-blur z-20 space-y-3">
+                <!-- Tools Bar -->
+                <div class="sticky top-[80px] z-20 py-2 -mx-5 px-5 glass-panel border-x-0 backdrop-blur-xl mb-4 transition-all duration-300">
                     <div class="flex gap-2 items-center">
                         <div class="relative flex-1 group">
-                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs group-focus-within:text-primary transition-colors"></i>
-                            <input type="text" id="search-input" onkeyup="renderHistory()" placeholder="Cari transaksi..." class="w-full bg-white border border-slate-200 rounded-full pl-9 pr-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm transition-all">
+                            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-emerald-400 text-xs group-focus-within:text-emerald-600 transition-colors"></i>
+                            <input type="text" id="search-input" onkeyup="renderHistory()" placeholder="Cari sedekah, belanja..." class="w-full bg-white border border-emerald-100 rounded-full pl-10 pr-4 py-2.5 text-xs font-medium shadow-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all placeholder-emerald-300/70 text-emerald-800">
                         </div>
                         <div class="relative">
-                            <select id="month-filter" onchange="renderHistory()" class="appearance-none bg-white border border-slate-200 text-slate-600 text-xs font-medium rounded-full pl-4 pr-8 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm h-full max-w-[110px] truncate transition-all">
-                                <!-- Populated by JS -->
+                            <select id="month-filter" onchange="renderHistory()" class="appearance-none bg-emerald-50 text-emerald-800 text-xs font-bold rounded-full pl-4 pr-8 py-2.5 border border-emerald-100 shadow-sm focus:ring-2 focus:ring-emerald-500 h-full">
+                                <!-- JS -->
                             </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-emerald-500">
                                 <i class="fas fa-chevron-down text-[10px]"></i>
                             </div>
                         </div>
-                        <!-- Toggle Edit Mode Button -->
-                        <button onclick="toggleEditMode()" id="edit-mode-btn" class="bg-white border border-slate-200 text-slate-500 w-10 h-10 rounded-full shadow-sm hover:bg-slate-50 hover:text-slate-800 active:bg-slate-100 transition flex items-center justify-center shrink-0">
+                        <button onclick="toggleEditMode()" id="edit-mode-btn" class="w-9 h-9 rounded-full bg-white border border-emerald-100 shadow-sm flex items-center justify-center text-emerald-500 hover:text-emerald-700 active:scale-90 transition-all">
                             <i class="fas fa-pen text-xs"></i>
                         </button>
                     </div>
-                    <!-- Select All Helper (Hidden by default) -->
-                    <div id="edit-helper" class="hidden flex justify-between items-center px-2 text-[10px] text-slate-500 animate-fade-in font-medium">
+                    <!-- Select All Helper -->
+                    <div id="edit-helper" class="hidden flex justify-between items-center mt-2 px-1 text-[10px] text-emerald-600 animate-fade-in font-bold">
                         <span>Pilih item untuk dihapus</span>
-                        <button onclick="toggleSelectAll()" class="text-primary hover:text-primaryDark transition-colors">Pilih Semua</button>
+                        <button onclick="toggleSelectAll()" class="text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full hover:bg-emerald-200 transition-colors">Pilih Semua</button>
                     </div>
                 </div>
 
-                <div id="transaction-list" class="space-y-3 pb-safe">
-                    <div class="text-center py-10 text-slate-300">
-                        <div class="loader border-slate-300 border-t-primary mx-auto mb-3"></div>
-                        <p class="text-xs">Menyiapkan data...</p>
+                <!-- List Container -->
+                <div id="transaction-list" class="space-y-3 pb-safe min-h-[300px]">
+                    <div class="flex flex-col items-center justify-center py-20 opacity-60">
+                        <div class="crescent-loader mb-4"></div>
+                        <p class="text-xs font-medium text-emerald-700">Menyiapkan catatan...</p>
                     </div>
                 </div>
             </div>
 
             <!-- Report View -->
-            <div id="view-report" class="hidden pb-safe space-y-5">
-                <div class="bg-white p-5 rounded-[1.5rem] shadow-soft border border-slate-100">
-                    <h3 class="font-bold text-slate-800 mb-4 text-sm">Analisis Bulan Ini</h3>
-                    <div class="h-56 relative">
+            <div id="view-report" class="hidden pb-safe space-y-6 animate-slide-up">
+                <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-emerald-50 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-emerald-50 rounded-bl-full opacity-50"></div>
+                    <h3 class="font-serif font-bold text-emerald-900 mb-6 text-base flex items-center gap-2 relative z-10">
+                        <i class="fas fa-chart-pie text-gold"></i> Analisis Bulan Ini
+                    </h3>
+                    <div class="h-64 relative z-10">
                         <canvas id="chart-pie"></canvas>
                     </div>
                 </div>
-                <div class="bg-white p-5 rounded-[1.5rem] shadow-soft border border-slate-100">
-                    <h3 class="font-bold text-slate-800 mb-4 text-sm">Tren Harian</h3>
+                <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-emerald-50">
+                    <h3 class="font-serif font-bold text-emerald-900 mb-6 text-base flex items-center gap-2">
+                        <i class="fas fa-chart-line text-gold"></i> Grafik Harian
+                    </h3>
                     <div class="h-48 relative">
                         <canvas id="chart-bar"></canvas>
                     </div>
@@ -313,94 +331,98 @@
 
         </main>
 
-        <!-- FAB (Main Add Button) -->
-        <button id="main-fab" onclick="openModal()" class="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom,20px))] right-5 bg-slate-900 text-white w-14 h-14 rounded-full shadow-2xl shadow-slate-900/30 flex items-center justify-center text-xl active:scale-90 transition-all duration-300 z-30 touch-manipulation hover:rotate-90">
-            <i class="fas fa-plus"></i>
-        </button>
+        <!-- Floating Action Button (Center Jewel) -->
+        <div class="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,20px))] right-5 z-40">
+            <button id="main-fab" onclick="openModal()" class="group relative w-14 h-14 rounded-2xl bg-gradient-to-br from-gold to-goldDark text-white shadow-xl shadow-gold/40 flex items-center justify-center text-xl overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 hover:rotate-90 border-2 border-white/20">
+                <div class="absolute inset-0 bg-white/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <i class="fas fa-plus relative z-10 drop-shadow-sm"></i>
+            </button>
+        </div>
 
-        <!-- Navigation -->
-        <nav class="glass border-t border-slate-200 fixed bottom-0 w-full z-40 pb-safe shadow-[0_-5px_20px_rgba(0,0,0,0.02)]">
-            <div class="flex justify-around items-center h-16 max-w-md mx-auto px-1">
-                <button onclick="switchTab('home')" class="nav-btn active flex-1 flex flex-col items-center justify-center h-full gap-1 text-primary transition active:scale-95" data-target="home">
-                    <i class="fas fa-home text-lg"></i>
-                    <span class="text-[9px] sm:text-[10px] font-semibold">Beranda</span>
+        <!-- Navigation Bar -->
+        <nav class="fixed bottom-0 w-full z-40 pb-safe bg-white/90 backdrop-blur-xl border-t border-emerald-100 shadow-[0_-5px_20px_rgba(0,0,0,0.02)] rounded-t-[2rem]">
+            <div class="flex justify-around items-center h-16 max-w-md mx-auto px-2">
+                <button onclick="switchTab('home')" class="nav-btn active flex-1 flex flex-col items-center justify-center h-full gap-1 text-emerald-600 transition group relative" data-target="home">
+                    <div class="absolute -top-[1px] w-8 h-1 bg-emerald-500 rounded-b-full opacity-0 transition-all duration-300 indicator"></div>
+                    <i class="fas fa-mosque text-lg group-active:scale-90 transition-transform"></i>
+                    <span class="text-[10px] font-bold">Beranda</span>
                 </button>
-                <button onclick="switchTab('hutang')" class="nav-btn flex-1 flex flex-col items-center justify-center h-full gap-1 text-slate-400 hover:text-slate-600 transition active:scale-95" data-target="hutang">
-                    <i class="fas fa-hand-holding-usd text-lg"></i>
-                    <span class="text-[9px] sm:text-[10px] font-semibold">Hutang</span>
+                <button onclick="switchTab('hutang')" class="nav-btn flex-1 flex flex-col items-center justify-center h-full gap-1 text-emerald-300 hover:text-emerald-500 transition group relative" data-target="hutang">
+                    <div class="absolute -top-[1px] w-8 h-1 bg-emerald-500 rounded-b-full opacity-0 transition-all duration-300 indicator"></div>
+                    <i class="fas fa-hand-holding-heart text-lg group-active:scale-90 transition-transform"></i>
+                    <span class="text-[10px] font-bold">Hutang</span>
                 </button>
-                <!-- Tombol Piutang Baru -->
-                <button onclick="switchTab('piutang')" class="nav-btn flex-1 flex flex-col items-center justify-center h-full gap-1 text-slate-400 hover:text-slate-600 transition active:scale-95" data-target="piutang">
-                    <i class="fas fa-money-bill-transfer text-lg"></i>
-                    <span class="text-[9px] sm:text-[10px] font-semibold">Piutang</span>
+                <button onclick="switchTab('piutang')" class="nav-btn flex-1 flex flex-col items-center justify-center h-full gap-1 text-emerald-300 hover:text-emerald-500 transition group relative" data-target="piutang">
+                    <div class="absolute -top-[1px] w-8 h-1 bg-emerald-500 rounded-b-full opacity-0 transition-all duration-300 indicator"></div>
+                    <i class="fas fa-hands-helping text-lg group-active:scale-90 transition-transform"></i>
+                    <span class="text-[10px] font-bold">Piutang</span>
                 </button>
-                <button onclick="switchTab('laporan')" class="nav-btn flex-1 flex flex-col items-center justify-center h-full gap-1 text-slate-400 hover:text-slate-600 transition active:scale-95" data-target="laporan">
-                    <i class="fas fa-chart-pie text-lg"></i>
-                    <span class="text-[9px] sm:text-[10px] font-semibold">Laporan</span>
+                <button onclick="switchTab('laporan')" class="nav-btn flex-1 flex flex-col items-center justify-center h-full gap-1 text-emerald-300 hover:text-emerald-500 transition group relative" data-target="laporan">
+                    <div class="absolute -top-[1px] w-8 h-1 bg-emerald-500 rounded-b-full opacity-0 transition-all duration-300 indicator"></div>
+                    <i class="fas fa-quran text-lg group-active:scale-90 transition-transform"></i>
+                    <span class="text-[10px] font-bold">Laporan</span>
                 </button>
             </div>
         </nav>
     </section>
 
     <!-- Modal Input -->
-    <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300 flex items-end sm:items-center justify-center">
-        <div class="bg-white w-full sm:max-w-md rounded-t-[2rem] sm:rounded-[2rem] p-6 transform transition-transform duration-300 translate-y-full sm:translate-y-0 shadow-2xl flex flex-col max-h-[90dvh]" id="modal-content">
-            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 sm:hidden"></div>
+    <div id="modal" class="fixed inset-0 bg-emerald-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center transition-all duration-300 opacity-0">
+        <div id="modal-content" class="bg-surface w-full sm:max-w-md rounded-t-[2rem] sm:rounded-[2rem] p-6 shadow-2xl transform translate-y-full transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) flex flex-col max-h-[90dvh] border-t border-white/50 relative">
+            
+            <div class="w-12 h-1 bg-emerald-200 rounded-full mx-auto mb-6 sm:hidden"></div>
+            
             <div class="flex justify-between items-center mb-6 shrink-0">
-                <h3 class="text-lg font-bold text-slate-900">Catat Transaksi</h3>
-                <button onclick="closeModal()" class="p-2 -mr-2 text-slate-400 hover:text-slate-600 active:text-slate-900 transition-colors">
-                    <i class="fas fa-times text-lg"></i>
+                <h3 class="text-xl font-serif font-bold text-emerald-900">Catat Transaksi</h3>
+                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center hover:bg-emerald-200 transition">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
+
             <form id="transaction-form" onsubmit="submitForm(event)" class="overflow-y-auto no-scrollbar pb-safe">
                 <div class="space-y-6">
-                    <!-- Type Selector (Modified) -->
-                    <div class="grid grid-cols-5 gap-1.5 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
-                        <label class="cursor-pointer touch-manipulation">
+                    <!-- Type Selector (Pill Style) -->
+                    <div class="bg-white p-1.5 rounded-2xl flex justify-between overflow-x-auto no-scrollbar gap-1 border border-emerald-100 shadow-sm">
+                        <label class="flex-1 cursor-pointer min-w-[70px]">
                             <input type="radio" name="tipe" value="Masuk" class="peer hidden" checked>
-                            <div class="peer-checked:bg-white peer-checked:text-green-600 peer-checked:shadow-sm peer-checked:ring-1 peer-checked:ring-black/5 py-2.5 text-center rounded-lg text-[9px] sm:text-[10px] font-bold text-slate-400 transition-all">Masuk</div>
+                            <div class="h-10 flex items-center justify-center rounded-xl text-[10px] font-bold text-slate-400 peer-checked:bg-emerald-100 peer-checked:text-emerald-700 transition-all duration-300">Masuk</div>
                         </label>
-                        <label class="cursor-pointer touch-manipulation">
+                        <label class="flex-1 cursor-pointer min-w-[70px]">
                             <input type="radio" name="tipe" value="Keluar" class="peer hidden">
-                            <div class="peer-checked:bg-white peer-checked:text-red-600 peer-checked:shadow-sm peer-checked:ring-1 peer-checked:ring-black/5 py-2.5 text-center rounded-lg text-[9px] sm:text-[10px] font-bold text-slate-400 transition-all">Keluar</div>
+                            <div class="h-10 flex items-center justify-center rounded-xl text-[10px] font-bold text-slate-400 peer-checked:bg-red-50 peer-checked:text-red-600 transition-all duration-300">Keluar</div>
                         </label>
-                        <label class="cursor-pointer touch-manipulation">
+                        <label class="flex-1 cursor-pointer min-w-[70px]">
                             <input type="radio" name="tipe" value="Hutang" class="peer hidden">
-                            <div class="peer-checked:bg-white peer-checked:text-orange-600 peer-checked:shadow-sm peer-checked:ring-1 peer-checked:ring-black/5 py-2.5 text-center rounded-lg text-[9px] sm:text-[10px] font-bold text-slate-400 transition-all">Hutang</div>
+                            <div class="h-10 flex items-center justify-center rounded-xl text-[10px] font-bold text-slate-400 peer-checked:bg-orange-50 peer-checked:text-orange-600 transition-all duration-300">Hutang</div>
                         </label>
-                        <label class="cursor-pointer touch-manipulation">
+                        <label class="flex-1 cursor-pointer min-w-[70px]">
                             <input type="radio" name="tipe" value="Piutang" class="peer hidden">
-                            <div class="peer-checked:bg-white peer-checked:text-cyan-600 peer-checked:shadow-sm peer-checked:ring-1 peer-checked:ring-black/5 py-2.5 text-center rounded-lg text-[9px] sm:text-[10px] font-bold text-slate-400 transition-all">Piutang</div>
-                        </label>
-                        <label class="cursor-pointer touch-manipulation">
-                            <input type="radio" name="tipe" value="Lainnya" class="peer hidden">
-                            <div class="peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm peer-checked:ring-1 peer-checked:ring-black/5 py-2.5 text-center rounded-lg text-[9px] sm:text-[10px] font-bold text-slate-400 transition-all">Lainnya</div>
+                            <div class="h-10 flex items-center justify-center rounded-xl text-[10px] font-bold text-slate-400 peer-checked:bg-teal-50 peer-checked:text-teal-600 transition-all duration-300">Piutang</div>
                         </label>
                     </div>
 
-                    <!-- Amount Input -->
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-2 ml-1">Jumlah Nominal</label>
-                        <div class="relative">
-                            <span class="absolute left-0 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">Rp</span>
-                            <input type="tel" inputmode="numeric" name="jumlah" required class="w-full text-3xl font-bold text-slate-800 border-b border-slate-200 focus:border-primary outline-none py-2 pl-8 placeholder-slate-200 transition bg-transparent" placeholder="0">
-                        </div>
+                    <!-- Input Nominal -->
+                    <div class="py-2 text-center relative">
+                        <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1 block">Jumlah (Rp)</label>
+                        <input type="tel" inputmode="numeric" name="jumlah" required class="w-full text-4xl font-serif font-bold text-emerald-900 text-center bg-transparent border-none outline-none placeholder-emerald-200 focus:placeholder-emerald-100 transition-all" placeholder="0">
+                        <i class="fas fa-pen text-xs text-emerald-200 absolute right-4 top-1/2 -translate-y-1/2"></i>
                     </div>
 
                     <!-- Details -->
-                    <div class="space-y-4">
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-semibold text-slate-500 ml-1">Tanggal</label>
-                            <input type="date" name="tanggal" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition text-slate-700 font-medium">
+                    <div class="space-y-3">
+                        <div class="bg-white p-3 rounded-2xl border border-emerald-100 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all">
+                            <label class="block text-[10px] font-bold text-emerald-400 mb-1">Tanggal</label>
+                            <input type="date" name="tanggal" required class="w-full bg-transparent border-none p-0 text-sm font-semibold text-slate-700 outline-none">
                         </div>
-                        <div class="space-y-1.5">
-                            <label class="block text-xs font-semibold text-slate-500 ml-1">Keterangan</label>
-                            <input type="text" name="keterangan" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition text-slate-700 font-medium" placeholder="Contoh: Makan Siang / Dipinjam Budi">
+                        <div class="bg-white p-3 rounded-2xl border border-emerald-100 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all">
+                            <label class="block text-[10px] font-bold text-emerald-400 mb-1">Keterangan</label>
+                            <input type="text" name="keterangan" required class="w-full bg-transparent border-none p-0 text-sm font-semibold text-slate-700 outline-none placeholder-slate-300" placeholder="Zakat, Iftar, Bensin...">
                         </div>
                     </div>
                 </div>
-                <button type="submit" id="submit-btn" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl mt-8 shadow-lg shadow-slate-200 transition transform active:scale-[0.98] flex justify-center items-center gap-2 touch-manipulation mb-2">
-                    <span>Simpan</span>
+
+                <button type="submit" id="submit-btn" class="w-full bg-emerald-800 text-white font-bold py-4 rounded-2xl mt-8 shadow-xl shadow-emerald-900/10 active:scale-[0.98] transition-all flex justify-center items-center gap-2 overflow-hidden relative group">
+                    <span class="relative z-10 flex items-center gap-2">Bismillah, Simpan <i class="fas fa-check-circle"></i></span>
                 </button>
             </form>
         </div>
@@ -414,18 +436,31 @@
         let rawData = [];
         let pieChart = null;
         let barChart = null;
-        
         let isEditMode = false;
         let selectedIds = new Set();
 
-        // --- Auth Logic ---
+        // --- Animations Utilities ---
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            if(!obj) return;
+            const startNum = 0;
+            const endNum = parseInt(String(end).replace(/[^0-9-]/g, ''));
+            
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const value = Math.floor(progress * (endNum - startNum) + startNum);
+                obj.innerHTML = formatRupiah(value);
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // --- Auth & Init Logic (Same as before) ---
         function checkAuth() {
             const isLoggedIn = localStorage.getItem('dompetku_auth');
-            if (isLoggedIn) {
-                showApp();
-            } else {
-                showLogin();
-            }
+            isLoggedIn ? showApp() : showLogin();
         }
 
         function handleLogin(e) {
@@ -435,20 +470,20 @@
 
             if (email && pass) {
                 const btn = e.target.querySelector('button[type="submit"]');
-                const originalText = btn.innerHTML;
+                const originalContent = btn.innerHTML;
                 btn.disabled = true;
-                btn.innerHTML = '<div class="loader"></div>';
+                btn.innerHTML = '<div class="crescent-loader w-5 h-5 border-2"></div>';
                 setTimeout(() => {
                     localStorage.setItem('dompetku_auth', 'true');
                     showApp();
                     btn.disabled = false;
-                    btn.innerHTML = originalText;
-                }, 800);
+                    btn.innerHTML = originalContent;
+                }, 1200);
             }
         }
 
         function handleLogout() {
-            if(confirm('Keluar dari aplikasi?')) {
+            if(confirm('Akhiri sesi?')) {
                 localStorage.removeItem('dompetku_auth');
                 showLogin();
             }
@@ -456,7 +491,9 @@
 
         function showApp() {
             document.getElementById('login-view').classList.add('hidden');
-            document.getElementById('app-view').classList.remove('hidden');
+            const appView = document.getElementById('app-view');
+            appView.classList.remove('hidden');
+            appView.classList.add('animate-slide-up');
             initApp();
         }
 
@@ -467,25 +504,16 @@
 
         function togglePassword() {
             const input = document.getElementById('password');
-            const icon = document.getElementById('eye-icon');
-            if (input.type === "password") {
-                input.type = "text";
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = "password";
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
+            if (input.type === "password") input.type = "text";
+            else input.type = "password";
         }
 
         // --- App Logic ---
-
         function initApp() {
             const today = new Date().toISOString().split('T')[0];
             document.querySelector('input[name="tanggal"]').value = today;
             
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const options = { weekday: 'short', day: 'numeric', month: 'short' };
             document.getElementById('current-date').textContent = new Date().toLocaleDateString('id-ID', options);
             
             const cachedData = localStorage.getItem('dompetku_data');
@@ -511,40 +539,29 @@
                     document.getElementById('offline-indicator').classList.add('hidden');
                     populateMonthFilter();
                     renderHistory();
-                    if(manual) showToast('Data diperbarui', 'success');
-                } else {
-                    if(manual) showToast('Gagal memuat data', 'error');
+                    if(manual) showToast('Data Diperbarui', 'success');
                 }
             } catch (error) {
                 console.error(error);
-                if (rawData.length > 0) {
-                    const ind = document.getElementById('offline-indicator');
-                    if(ind) ind.classList.remove('hidden');
-                }
+                if (rawData.length > 0) document.getElementById('offline-indicator').classList.remove('hidden');
             } finally {
                 if(icon) icon.classList.remove('fa-spin');
             }
         }
 
-        // --- Transaksi Logic ---
-
         async function submitForm(e) {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            const originalText = btn.innerHTML;
+            const originalHTML = btn.innerHTML;
             
             btn.disabled = true;
-            btn.innerHTML = '<div class="loader border-slate-400 border-t-white"></div>';
+            btn.innerHTML = '<div class="crescent-loader w-5 h-5 border-2"></div>';
 
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
             
-            // Set status default untuk Hutang dan Piutang
-            if (data.tipe === 'Hutang' || data.tipe === 'Piutang') {
-                data.status = 'Belum Lunas';
-            } else {
-                data.status = '-';
-            }
+            if (data.tipe === 'Hutang' || data.tipe === 'Piutang') data.status = 'Belum Lunas';
+            else data.status = '-';
 
             try {
                 const response = await fetch(`${WEB_APP_URL}?action=create`, {
@@ -554,7 +571,7 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    showToast('Tersimpan', 'success');
+                    showToast('Barakallah, Tersimpan!', 'success');
                     closeModal();
                     e.target.reset();
                     document.querySelector('input[name="tanggal"]').value = new Date().toISOString().split('T')[0];
@@ -566,12 +583,12 @@
                 showToast('Gagal: ' + error.message, 'error');
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = originalText;
+                btn.innerHTML = originalHTML;
             }
         }
 
         async function markAsPaid(id) {
-            if(!confirm("Tandai sebagai lunas?")) return;
+            if(!confirm("Sudah lunas? Alhamdulillah.")) return;
             const card = document.getElementById(`card-${id}`);
             if(card) card.style.opacity = '0.5';
 
@@ -580,12 +597,9 @@
                     method: 'POST',
                     body: JSON.stringify({ id: id, status: 'Lunas' })
                 });
-                const result = await response.json();
-                if (result.status === 'success') {
-                    showToast('Lunas!', 'success');
+                if (await response.json().then(r => r.status === 'success')) {
+                    showToast('Lunas, Alhamdulillah', 'success');
                     fetchData(true);
-                } else {
-                    throw new Error(result.message);
                 }
             } catch (error) {
                 showToast('Gagal update', 'error');
@@ -593,8 +607,7 @@
             }
         }
 
-        // --- DELETE LOGIC ---
-
+        // --- Delete Logic (Same) ---
         function toggleEditMode() {
             isEditMode = !isEditMode;
             const btn = document.getElementById('edit-mode-btn');
@@ -602,15 +615,17 @@
             const helper = document.getElementById('edit-helper');
             
             if (isEditMode) {
-                btn.classList.add('bg-red-50', 'text-red-600', 'border-red-200');
+                btn.classList.add('bg-red-50', 'text-red-500', 'border-red-200');
                 btn.innerHTML = '<i class="fas fa-times"></i>';
                 fab.classList.add('scale-0'); 
                 helper.classList.remove('hidden');
+                helper.classList.add('flex');
             } else {
-                btn.classList.remove('bg-red-50', 'text-red-600', 'border-red-200');
+                btn.classList.remove('bg-red-50', 'text-red-500', 'border-red-200');
                 btn.innerHTML = '<i class="fas fa-pen text-xs"></i>';
                 fab.classList.remove('scale-0'); 
                 helper.classList.add('hidden');
+                helper.classList.remove('flex');
                 selectedIds.clear();
                 updateDeleteBar();
             }
@@ -619,23 +634,17 @@
 
         function toggleSelection(id) {
             if (!isEditMode) return;
-            if (selectedIds.has(id)) {
-                selectedIds.delete(id);
-            } else {
-                selectedIds.add(id);
-            }
-            renderHistory(); 
+            if (selectedIds.has(id)) selectedIds.delete(id);
+            else selectedIds.add(id);
             updateDeleteBar();
+            renderHistory(); // Re-render to show selection state
         }
 
         function toggleSelectAll() {
             const visibleIds = getVisibleIds();
             const allSelected = visibleIds.every(id => selectedIds.has(id));
-            if (allSelected) {
-                visibleIds.forEach(id => selectedIds.delete(id));
-            } else {
-                visibleIds.forEach(id => selectedIds.add(id));
-            }
+            if (allSelected) visibleIds.forEach(id => selectedIds.delete(id));
+            else visibleIds.forEach(id => selectedIds.add(id));
             renderHistory();
             updateDeleteBar();
         }
@@ -653,49 +662,34 @@
             const bar = document.getElementById('delete-bar');
             const count = document.getElementById('selected-count');
             count.innerText = selectedIds.size;
-            if (selectedIds.size > 0) {
-                bar.classList.remove('translate-y-32');
-            } else {
-                bar.classList.add('translate-y-32');
-            }
+            if (selectedIds.size > 0) bar.classList.remove('translate-y-40');
+            else bar.classList.add('translate-y-40');
         }
 
         async function deleteSelectedItems() {
             if (selectedIds.size === 0) return;
-            if (!confirm(`Yakin ingin menghapus ${selectedIds.size} item ini?`)) return;
+            if (!confirm(`Hapus ${selectedIds.size} data?`)) return;
 
             const idsToDelete = Array.from(selectedIds);
             const originalData = [...rawData]; 
-            
-            // Optimistic Update
             rawData = rawData.filter(item => !selectedIds.has(item.id));
             localStorage.setItem('dompetku_data', JSON.stringify(rawData));
-            
             toggleEditMode(); 
             showToast('Menghapus...', 'success');
 
             try {
-                const response = await fetch(`${WEB_APP_URL}?action=delete`, {
-                    method: 'POST',
-                    body: JSON.stringify({ ids: idsToDelete })
+                await fetch(`${WEB_APP_URL}?action=delete`, {
+                    method: 'POST', body: JSON.stringify({ ids: idsToDelete })
                 });
-                const result = await response.json();
-                if (result.status === 'success') {
-                    console.log('Sync delete success');
-                } else {
-                    throw new Error(result.message || 'Gagal menghapus di server');
-                }
             } catch (error) {
-                console.error("Delete failed", error);
                 rawData = originalData;
                 localStorage.setItem('dompetku_data', JSON.stringify(rawData));
                 renderHistory(); 
-                showToast('Gagal! Data dikembalikan.', 'error');
+                showToast('Gagal menghapus!', 'error');
             }
         }
 
         // --- Render UI ---
-
         function populateMonthFilter() {
             const select = document.getElementById('month-filter');
             const currentVal = select.value;
@@ -724,201 +718,132 @@
             if (filterValue) filteredData = filteredData.filter(item => item.tanggal.startsWith(filterValue));
             if (searchTerm) filteredData = filteredData.filter(item => item.keterangan.toLowerCase().includes(searchTerm) || item.jumlah.toString().includes(searchTerm));
 
-            // Calc totals
             let income = 0, expense = 0;
             filteredData.forEach(item => {
                 const val = parseInt(item.jumlah);
-                if (item.tipe === 'Masuk' || item.tipe === 'Lainnya') income += val;
-                // Piutang dianggap pengeluaran (uang keluar) dalam perhitungan saldo dompet saat ini
-                if (item.tipe === 'Keluar' || item.tipe === 'Hutang' || item.tipe === 'Piutang') expense += val;
+                if (item.tipe === 'Masuk') income += val;
+                if (['Keluar', 'Hutang', 'Piutang'].includes(item.tipe)) expense += val;
             });
 
+            animateValue('total-balance', 0, income - expense, 800);
             document.getElementById('total-income').textContent = formatRupiah(income);
             document.getElementById('total-expense').textContent = formatRupiah(expense);
-            document.getElementById('total-balance').textContent = formatRupiah(income - expense);
 
-            // Handle Tab Switching
             const activeTab = document.querySelector('.nav-btn.active').dataset.target;
-            if (activeTab === 'hutang') {
-                renderDebtList(rawData, searchTerm, 'Hutang');
-                return;
-            } else if (activeTab === 'piutang') {
-                renderReceivableList(rawData, searchTerm);
-                return;
-            } else if (activeTab === 'laporan') {
-                renderReports(filteredData);
-                return;
-            }
+            if (activeTab === 'hutang') { renderDebtList(rawData, searchTerm, 'Hutang'); return; }
+            else if (activeTab === 'piutang') { renderReceivableList(rawData, searchTerm); return; }
+            else if (activeTab === 'laporan') { renderReports(filteredData); return; }
 
             if (filteredData.length === 0) {
-                container.innerHTML = `<div class="flex flex-col items-center justify-center py-12 text-slate-300"><i class="fas fa-receipt text-3xl mb-3 opacity-20"></i><p class="text-xs">Belum ada transaksi</p></div>`;
+                container.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-16 text-emerald-300 animate-slide-up">
+                    <i class="fas fa-moon text-4xl mb-3 opacity-30"></i>
+                    <p class="text-xs font-medium">Belum ada catatan.</p>
+                </div>`;
                 return;
             }
 
-            container.innerHTML = filteredData.map(item => {
+            container.innerHTML = filteredData.map((item, index) => {
                 const isExpense = ['Keluar', 'Hutang', 'Piutang'].includes(item.tipe);
-                const colorClass = isExpense ? 'text-red-600' : 'text-green-600';
+                const colorClass = isExpense ? 'text-red-500' : 'text-emerald-600';
                 
-                // Color Logic
-                let iconBg = 'bg-slate-50 text-slate-600';
-                if(item.tipe === 'Masuk') iconBg = 'bg-green-50 text-green-600';
-                if(item.tipe === 'Keluar') iconBg = 'bg-red-50 text-red-600';
-                if(item.tipe === 'Hutang') iconBg = 'bg-orange-50 text-orange-600';
-                if(item.tipe === 'Piutang') iconBg = 'bg-cyan-50 text-cyan-600';
+                let iconClass = 'bg-slate-50 text-slate-400';
+                let iconName = 'fa-coins';
+                if(item.tipe === 'Masuk') { iconClass = 'bg-emerald-100 text-emerald-600'; iconName = 'fa-arrow-down'; }
+                if(item.tipe === 'Keluar') { iconClass = 'bg-red-50 text-red-500'; iconName = 'fa-shopping-basket'; }
+                if(item.tipe === 'Hutang') { iconClass = 'bg-orange-50 text-orange-500'; iconName = 'fa-file-invoice'; }
+                if(item.tipe === 'Piutang') { iconClass = 'bg-teal-50 text-teal-600'; iconName = 'fa-hand-holding-usd'; }
                 
                 const isSelected = selectedIds.has(item.id);
-                const selectStyle = isSelected ? 'bg-red-50 border-red-200' : 'bg-white border-slate-100';
-                
-                let leftContent = ``;
-                if (isEditMode) {
-                    leftContent = `
-                    <div class="pr-3 pointer-events-none">
-                        <input type="checkbox" id="check-${item.id}" class="custom-checkbox text-red-500" ${isSelected ? 'checked' : ''}>
-                    </div>
-                    `;
-                }
+                const selectStyle = isSelected ? 'bg-emerald-50 border-emerald-300 ring-1 ring-emerald-300' : 'bg-white border-transparent';
+                const delay = Math.min(index * 50, 500);
 
                 return `
-                <div id="container-${item.id}" onclick="isEditMode ? toggleSelection('${item.id}') : null" class="${selectStyle} p-4 rounded-xl shadow-soft border flex items-center justify-between active:scale-[0.99] transition-all duration-200 select-none cursor-pointer">
-                    <div class="flex items-center gap-3 overflow-hidden">
-                        ${leftContent}
-                        <div class="w-10 h-10 rounded-full ${iconBg} flex items-center justify-center shrink-0 transition-transform ${isEditMode ? 'scale-90' : ''}">
-                            <i class="${getIcon(item.tipe)} text-sm"></i>
+                <div id="container-${item.id}" onclick="isEditMode ? toggleSelection('${item.id}') : null" 
+                     class="${selectStyle} p-4 rounded-2xl shadow-sm border flex items-center justify-between active:scale-[0.98] transition-all duration-300 select-none cursor-pointer animate-slide-up" 
+                     style="animation-delay: ${delay}ms; animation-fill-mode: forwards; opacity: 0;">
+                    
+                    <div class="flex items-center gap-4 overflow-hidden">
+                         ${isEditMode ? `<div class="w-5 h-5 rounded-full border-2 ${isSelected ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300'} flex items-center justify-center"><i class="fas fa-check text-white text-[10px] ${isSelected?'':'hidden'}"></i></div>` : ''}
+                        
+                        <div class="w-10 h-10 rounded-full ${iconClass} flex items-center justify-center shrink-0">
+                            <i class="fas ${iconName} text-xs"></i>
                         </div>
                         <div class="min-w-0">
-                            <p class="font-bold text-slate-800 text-sm truncate">${item.keterangan}</p>
-                            <p class="text-[10px] text-slate-400 font-medium mt-0.5">${new Date(item.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} • ${item.tipe}</p>
+                            <p class="font-bold text-slate-700 text-sm truncate mb-0.5">${item.keterangan}</p>
+                            <p class="text-[10px] text-slate-400 font-medium">${new Date(item.tanggal).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'})}</p>
                         </div>
                     </div>
-                    <div class="text-right shrink-0 ml-2">
+                    <div class="text-right shrink-0">
                         <p class="font-bold ${colorClass} text-sm">${isExpense ? '-' : '+'} ${formatRupiah(item.jumlah)}</p>
                     </div>
                 </div>`;
             }).join('');
         }
 
-        // Render List Hutang (Updated with Summary)
         function renderDebtList(data, search, type) {
             const container = document.getElementById('transaction-list');
             let debts = data.filter(item => item.tipe === type);
             if(search) debts = debts.filter(item => item.keterangan.toLowerCase().includes(search));
 
-            // Hitung Total Hutang
             const totalHutang = debts.reduce((acc, curr) => acc + parseInt(curr.jumlah), 0);
             const totalBelumLunas = debts.filter(p => p.status !== 'Lunas').reduce((acc, curr) => acc + parseInt(curr.jumlah), 0);
-            const totalSudahLunas = totalHutang - totalBelumLunas;
+            const percent = totalHutang > 0 ? ((totalHutang - totalBelumLunas)/totalHutang)*100 : 0;
+
+            let bg = type === 'Hutang' ? 'from-orange-400 to-red-500' : 'from-teal-400 to-emerald-500';
+            let title = type === 'Hutang' ? 'Hutang' : 'Piutang';
 
             let html = `
-            <!-- Summary Card for Hutang -->
-            <div class="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-4 text-white shadow-lg shadow-orange-200 mb-4">
-                <div class="flex justify-between items-end mb-2">
+            <div class="bg-gradient-to-r ${bg} rounded-[1.5rem] p-5 text-white shadow-lg mb-6 animate-fade-in relative overflow-hidden">
+                <div class="absolute right-0 top-0 opacity-10 text-6xl"><i class="fas fa-kaaba"></i></div>
+                <div class="flex justify-between items-end mb-3 relative z-10">
                     <div>
-                        <p class="text-[10px] text-orange-100 font-medium">Total Hutang</p>
-                        <h2 class="text-xl font-bold">${formatRupiah(totalHutang)}</h2>
+                        <p class="text-[10px] font-bold uppercase tracking-widest opacity-80">Total ${title}</p>
+                        <h2 class="text-2xl font-serif font-bold">${formatRupiah(totalHutang)}</h2>
                     </div>
                     <div class="text-right">
-                         <p class="text-[10px] text-orange-100 font-medium">Sisa Tagihan</p>
-                         <p class="font-bold text-white">${formatRupiah(totalBelumLunas)}</p>
+                         <p class="text-[10px] font-medium opacity-80">Sisa</p>
+                         <p class="font-bold text-lg">${formatRupiah(totalBelumLunas)}</p>
                     </div>
                 </div>
-                <div class="w-full bg-black/20 h-1.5 rounded-full overflow-hidden mt-1">
-                    <div class="bg-white h-full" style="width: ${totalHutang > 0 ? (totalSudahLunas/totalHutang)*100 : 0}%"></div>
+                <div class="w-full bg-black/20 h-1.5 rounded-full overflow-hidden relative z-10">
+                    <div class="bg-white h-full transition-all duration-1000 ease-out" style="width: ${percent}%"></div>
                 </div>
-                <p class="text-[9px] text-orange-50 mt-1 text-right">${totalHutang > 0 ? Math.round((totalSudahLunas/totalHutang)*100) : 0}% Lunas</p>
-            </div>
-            `;
+            </div>`;
 
             if (debts.length === 0) {
-                html += `<div class="text-center py-10 text-slate-400 text-xs">Tidak ada data ${type.toLowerCase()}.</div>`;
-                container.innerHTML = html;
+                container.innerHTML = html + `<div class="text-center py-10 text-slate-400 text-xs">Bersih dari ${title}, Alhamdulillah.</div>`;
                 return;
             }
 
-            html += debts.map(item => {
+            html += debts.map((item, index) => {
                 const isLunas = item.status === 'Lunas';
                 return `
-                <div id="card-${item.id}" class="bg-white p-4 rounded-xl shadow-soft border border-slate-100 mb-3 relative overflow-hidden active:scale-[0.99] transition-transform">
-                    ${isLunas ? '<div class="absolute top-0 right-0 bg-green-500 text-white text-[9px] font-bold px-2 py-1 rounded-bl-lg tracking-wider">LUNAS</div>' : ''}
-                    <div class="flex justify-between items-start mb-2">
-                        <div class="min-w-0 pr-2"><h4 class="font-bold text-slate-800 truncate text-sm">${item.keterangan}</h4><p class="text-[10px] text-slate-500 mt-0.5">${new Date(item.tanggal).toLocaleDateString('id-ID')}</p></div>
-                        <p class="font-bold text-red-600 shrink-0 text-sm">${formatRupiah(item.jumlah)}</p>
-                    </div>
-                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-slate-50">
-                        <span class="text-[10px] font-bold px-2 py-1 rounded ${isLunas ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}">${item.status}</span>
-                        ${!isLunas ? `<button onclick="markAsPaid('${item.id}')" class="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg hover:bg-indigo-100 active:scale-95 transition">Lunasi</button>` : ''}
-                    </div>
-                </div>`;
-            }).join('');
-            
-            container.innerHTML = html;
-        }
-
-        // NEW: Render List Piutang (Pengeluaran Piutang Detail)
-        function renderReceivableList(data, search) {
-            const container = document.getElementById('transaction-list');
-            
-            // Filter Data Piutang
-            let piutangs = data.filter(item => item.tipe === 'Piutang');
-            if(search) piutangs = piutangs.filter(item => item.keterangan.toLowerCase().includes(search));
-
-            // Hitung Detail Pengeluaran Piutang
-            const totalPiutang = piutangs.reduce((acc, curr) => acc + parseInt(curr.jumlah), 0);
-            const totalBelumLunas = piutangs.filter(p => p.status !== 'Lunas').reduce((acc, curr) => acc + parseInt(curr.jumlah), 0);
-            const totalSudahLunas = totalPiutang - totalBelumLunas;
-
-            let html = `
-            <!-- Summary Card for Piutang -->
-            <div class="bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl p-4 text-white shadow-lg shadow-cyan-200 mb-4">
-                <div class="flex justify-between items-end mb-2">
-                    <div>
-                        <p class="text-[10px] text-cyan-100 font-medium">Total Dipinjamkan</p>
-                        <h2 class="text-xl font-bold">${formatRupiah(totalPiutang)}</h2>
-                    </div>
-                    <div class="text-right">
-                         <p class="text-[10px] text-cyan-100 font-medium">Belum Dibayar</p>
-                         <p class="font-bold text-yellow-300">${formatRupiah(totalBelumLunas)}</p>
-                    </div>
-                </div>
-                <div class="w-full bg-black/20 h-1.5 rounded-full overflow-hidden mt-1">
-                    <div class="bg-white h-full" style="width: ${totalPiutang > 0 ? (totalSudahLunas/totalPiutang)*100 : 0}%"></div>
-                </div>
-                <p class="text-[9px] text-cyan-50 mt-1 text-right">${totalPiutang > 0 ? Math.round((totalSudahLunas/totalPiutang)*100) : 0}% Kembali</p>
-            </div>
-            `;
-
-            if (piutangs.length === 0) {
-                html += `<div class="text-center py-10 text-slate-400 text-xs">Belum ada data piutang.</div>`;
-                container.innerHTML = html;
-                return;
-            }
-
-            html += piutangs.map(item => {
-                const isLunas = item.status === 'Lunas';
-                return `
-                <div id="card-${item.id}" class="bg-white p-4 rounded-xl shadow-soft border border-slate-100 mb-3 relative overflow-hidden active:scale-[0.99] transition-transform">
-                    ${isLunas ? '<div class="absolute top-0 right-0 bg-green-500 text-white text-[9px] font-bold px-2 py-1 rounded-bl-lg tracking-wider">LUNAS</div>' : ''}
-                    <div class="flex justify-between items-start mb-2">
-                        <div class="min-w-0 pr-2">
+                <div id="card-${item.id}" class="bg-white p-4 rounded-2xl shadow-sm border border-emerald-50 mb-3 relative overflow-hidden active:scale-[0.99] transition-all animate-slide-up" style="animation-delay: ${index*50}ms">
+                    ${isLunas ? '<div class="absolute -right-6 top-3 bg-emerald-500 text-white text-[9px] font-bold px-8 py-1 rotate-45 shadow-sm">LUNAS</div>' : ''}
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="min-w-0 pr-4">
                             <h4 class="font-bold text-slate-800 truncate text-sm">${item.keterangan}</h4>
-                            <p class="text-[10px] text-slate-500 mt-0.5">${new Date(item.tanggal).toLocaleDateString('id-ID')} • Piutang</p>
+                            <div class="flex items-center gap-1 text-[10px] text-slate-400 mt-1"><i class="far fa-calendar"></i> ${new Date(item.tanggal).toLocaleDateString('id-ID')}</div>
                         </div>
-                        <p class="font-bold text-cyan-600 shrink-0 text-sm">${formatRupiah(item.jumlah)}</p>
+                        <p class="font-bold text-slate-700 shrink-0 text-sm">${formatRupiah(item.jumlah)}</p>
                     </div>
-                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-slate-50">
-                        <span class="text-[10px] font-bold px-2 py-1 rounded ${isLunas ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}">${item.status}</span>
-                        ${!isLunas ? `<button onclick="markAsPaid('${item.id}')" class="text-[10px] font-bold bg-cyan-50 text-cyan-600 px-3 py-1.5 rounded-lg hover:bg-cyan-100 active:scale-95 transition">Tandai Lunas</button>` : ''}
-                    </div>
+                    ${!isLunas ? `<div class="pt-2 mt-2 border-t border-slate-50 flex justify-end">
+                        <button onclick="markAsPaid('${item.id}')" class="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-100 active:scale-95 transition">Lunasi</button>
+                    </div>` : ''}
                 </div>`;
             }).join('');
-
             container.innerHTML = html;
         }
+
+        function renderReceivableList(d,s) { renderDebtList(d,s,'Piutang'); }
 
         function renderReports(data) {
             if (typeof Chart === 'undefined') return;
             if(pieChart) pieChart.destroy();
             if(barChart) barChart.destroy();
 
+            Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
             const ctxPie = document.getElementById('chart-pie').getContext('2d');
             pieChart = new Chart(ctxPie, {
                 type: 'doughnut',
@@ -926,92 +851,85 @@
                     labels: ['Masuk', 'Keluar', 'Hutang', 'Piutang'],
                     datasets: [{
                         data: [
-                            data.filter(i => i.tipe === 'Masuk' || i.tipe === 'Lainnya').reduce((a, b) => a + parseInt(b.jumlah), 0),
+                            data.filter(i => i.tipe === 'Masuk').reduce((a, b) => a + parseInt(b.jumlah), 0),
                             data.filter(i => i.tipe === 'Keluar').reduce((a, b) => a + parseInt(b.jumlah), 0),
                             data.filter(i => i.tipe === 'Hutang').reduce((a, b) => a + parseInt(b.jumlah), 0),
                             data.filter(i => i.tipe === 'Piutang').reduce((a, b) => a + parseInt(b.jumlah), 0),
                         ],
-                        backgroundColor: ['#10B981', '#EF4444', '#F59E0B', '#06b6d4'],
+                        backgroundColor: ['#10b981', '#ef4444', '#f59e0b', '#14b8a6'],
                         borderWidth: 0,
-                        hoverOffset: 4
+                        hoverOffset: 10
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 10, family: "'Plus Jakarta Sans', sans-serif"} } } } }
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 6, font: {size: 10} } } } }
             });
 
+            // Bar Chart logic same as before...
             const dailyData = {};
-            data.slice(0, 30).forEach(item => {
-                const d = item.tanggal.substring(5);
-                if(!dailyData[d]) dailyData[d] = 0;
-                dailyData[d] += parseInt(item.jumlah);
-            });
-            const sortedKeys = Object.keys(dailyData).sort().slice(-7);
+            for(let i=6; i>=0; i--) {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                dailyData[d.toISOString().split('T')[0]] = { label: d.toLocaleDateString('id-ID', {weekday:'short'}), val: 0 };
+            }
+            data.forEach(item => { if(dailyData[item.tanggal]) dailyData[item.tanggal].val += parseInt(item.jumlah); });
 
             const ctxBar = document.getElementById('chart-bar').getContext('2d');
+            const gradient = ctxBar.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, '#10b981'); gradient.addColorStop(1, '#047857');
+
             barChart = new Chart(ctxBar, {
                 type: 'bar',
                 data: {
-                    labels: sortedKeys,
-                    datasets: [{ label: 'Vol', data: sortedKeys.map(k => dailyData[k]), backgroundColor: '#4338ca', borderRadius: 6, barThickness: 12 }]
+                    labels: Object.values(dailyData).map(d => d.label),
+                    datasets: [{ label: 'Rp', data: Object.values(dailyData).map(d => d.val), backgroundColor: gradient, borderRadius: 4, barThickness: 12 }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { font: {size: 9} } } }, plugins: { legend: { display: false } } }
             });
         }
 
         function formatRupiah(angka) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka); }
-        function getIcon(tipe) {
-            switch(tipe) { 
-                case 'Masuk': return 'fas fa-wallet'; 
-                case 'Keluar': return 'fas fa-shopping-bag'; 
-                case 'Hutang': return 'fas fa-file-invoice-dollar'; 
-                case 'Piutang': return 'fas fa-money-bill-transfer'; 
-                default: return 'fas fa-coins'; 
-            }
-        }
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
-            const icon = document.getElementById('toast-icon');
-            const text = document.getElementById('toast-message');
-            toast.classList.remove('opacity-0', 'pointer-events-none');
-            text.innerText = msg;
-            icon.className = type === 'error' ? 'fas fa-exclamation-circle text-red-400' : 'fas fa-check-circle text-green-400';
-            setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 3000);
+            document.getElementById('toast-message').innerText = msg;
+            toast.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-[-20px]', 'pointer-events-none'), 3000);
         }
 
-        // --- UI Interactions ---
+        // --- Navigation & Modal ---
         function openModal() {
             const modal = document.getElementById('modal');
             const content = document.getElementById('modal-content');
             modal.classList.remove('hidden');
-            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('translate-y-full'); }, 10);
+            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('translate-y-full'); }, 50);
         }
         function closeModal() {
             const modal = document.getElementById('modal');
             const content = document.getElementById('modal-content');
-            modal.classList.add('opacity-0'); content.classList.add('translate-y-full');
-            setTimeout(() => modal.classList.add('hidden'), 300);
+            content.classList.add('translate-y-full');
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 350);
         }
         function switchTab(target) {
             document.querySelectorAll('.nav-btn').forEach(btn => {
+                const indicator = btn.querySelector('.indicator');
+                const icon = btn.querySelector('i');
                 if(btn.dataset.target === target) {
-                    btn.classList.add('active', 'text-primary'); btn.classList.remove('text-slate-400');
-                    btn.querySelector('i').classList.add('text-primary'); btn.querySelector('i').classList.remove('text-slate-400');
+                    btn.classList.add('active', 'text-emerald-600'); btn.classList.remove('text-emerald-300');
+                    indicator.classList.remove('opacity-0');
+                    icon.classList.add('text-emerald-600');
                 } else {
-                    btn.classList.remove('active', 'text-primary'); btn.classList.add('text-slate-400');
-                    btn.querySelector('i').classList.remove('text-primary'); btn.querySelector('i').classList.add('text-slate-400');
+                    btn.classList.remove('active', 'text-emerald-600'); btn.classList.add('text-emerald-300');
+                    indicator.classList.add('opacity-0');
+                    icon.classList.remove('text-emerald-600');
                 }
             });
             document.getElementById('view-dashboard').classList.toggle('hidden', target === 'laporan');
             document.getElementById('view-report').classList.toggle('hidden', target !== 'laporan');
-            
             if (isEditMode) toggleEditMode();
             else renderHistory();
         }
 
         document.getElementById('modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
-        
         document.addEventListener('DOMContentLoaded', checkAuth);
-
     </script>
 </body>
 </html>
