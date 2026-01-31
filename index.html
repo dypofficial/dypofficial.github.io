@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2canvas for Image Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -103,26 +105,6 @@
             animation: spin 1.5s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Print Styles for Receipt */
-        @media print {
-            body * { visibility: hidden; }
-            #receipt-preview-container, #receipt-preview-container * { visibility: visible; }
-            #receipt-preview-container {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                margin: 0;
-                padding: 0;
-                background: white;
-                color: black;
-                box-shadow: none;
-                border: none;
-            }
-            /* Hide non-print elements inside the container if any */
-            .no-print { display: none !important; }
-        }
         
         .paper-tear {
             background-image: radial-gradient(circle at 10px -5px, transparent 12px, white 13px);
@@ -529,8 +511,8 @@
 
             <!-- Footer Actions -->
             <div class="p-5 border-t border-emerald-100 bg-emerald-50 flex gap-3">
-                 <button onclick="window.print()" class="flex-1 bg-emerald-800 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-emerald-900 transition flex items-center justify-center gap-2">
-                    <i class="fas fa-print"></i> Cetak / PDF
+                 <button onclick="downloadReceiptAsImage()" class="flex-1 bg-emerald-800 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-emerald-900 transition flex items-center justify-center gap-2">
+                    <i class="fas fa-image"></i> Simpan Gambar (JPG/PNG)
                 </button>
             </div>
         </div>
@@ -876,6 +858,38 @@
             }).join('');
 
             document.getElementById('preview-total').innerText = formatRupiah(total);
+        }
+
+        // --- NEW: Download as Image Logic ---
+        function downloadReceiptAsImage() {
+            const element = document.getElementById('receipt-preview-container');
+            const btn = document.querySelector('#modal-receipt button.bg-emerald-800');
+            const originalText = btn.innerHTML;
+            
+            // Visual Feedback
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            btn.disabled = true;
+
+            html2canvas(element, {
+                scale: 2, // High resolution
+                backgroundColor: '#ffffff',
+                logging: false,
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Struk-Dompet-Ramadan-' + Date.now() + '.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showToast('Struk berhasil disimpan!', 'success');
+            }).catch(err => {
+                console.error(err);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showToast('Gagal menyimpan gambar', 'error');
+            });
         }
 
         // --- Render UI ---
