@@ -44,6 +44,7 @@
                         'twinkle': 'twinkle 4s ease-in-out infinite',
                         'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                         'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     },
                     keyframes: {
                         float: {
@@ -87,6 +88,10 @@
         .card-gradient {
             background: linear-gradient(135deg, #065f46 0%, #047857 100%);
         }
+        
+        .prayer-gradient {
+            background: linear-gradient(135deg, #d97706 0%, #fbbf24 100%);
+        }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
@@ -124,6 +129,12 @@
 </head>
 
 <body class="text-slate-800 font-sans h-[100dvh] w-full overflow-hidden text-sm sm:text-base relative">
+
+    <!-- Audio Element for Background Music -->
+    <audio id="bg-music" loop>
+        <source src="audio/audio.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
 
     <!-- Background Decorations -->
     <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -227,6 +238,9 @@
                     </div>
                 </div>
                 <div class="flex gap-2">
+                    <button onclick="toggleMusic()" id="music-btn" class="w-9 h-9 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm active:scale-90 hover:bg-emerald-100 transition-all">
+                        <i class="fas fa-music text-xs"></i>
+                    </button>
                      <button onclick="fetchData(true)" class="w-9 h-9 rounded-full bg-white border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm active:scale-90 hover:bg-emerald-50 transition-all group">
                         <i class="fas fa-sync-alt text-xs group-hover:rotate-180 transition-transform duration-500" id="refresh-icon"></i>
                     </button>
@@ -243,6 +257,43 @@
             <!-- Dashboard View -->
             <div id="view-dashboard" class="animate-slide-up">
                 
+                <!-- NEW: Prayer Times Card -->
+                <div class="relative w-full rounded-[2rem] overflow-hidden shadow-xl shadow-orange-500/20 mb-6 prayer-gradient group">
+                    <div class="absolute inset-0 bg-islamic-pattern opacity-10 mix-blend-overlay"></div>
+                    <div class="relative z-10 p-5 text-white">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-map-marker-alt text-xs opacity-70"></i>
+                                <span class="text-xs font-bold uppercase tracking-wide" id="location-name">Jakarta</span>
+                            </div>
+                            <div class="text-[10px] font-medium bg-white/20 px-2 py-1 rounded-lg backdrop-blur-sm">
+                                <span id="hijri-date">...</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-end mb-4">
+                            <div>
+                                <p class="text-[10px] opacity-80 uppercase tracking-widest mb-1">Menuju <span id="next-prayer-name">...</span></p>
+                                <h2 class="text-3xl font-mono font-bold tracking-tight" id="countdown-timer">--:--:--</h2>
+                            </div>
+                            <div class="text-right">
+                                <i class="fas fa-kaaba text-4xl opacity-20 absolute right-4 bottom-4"></i>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-black/10 rounded-xl p-2 flex justify-between items-center border border-white/10">
+                                <span class="text-[10px] font-bold"><i class="fas fa-cloud-moon mr-1"></i> Imsak</span>
+                                <span class="text-sm font-mono font-bold" id="time-imsak">--:--</span>
+                            </div>
+                            <div class="bg-black/10 rounded-xl p-2 flex justify-between items-center border border-white/10">
+                                <span class="text-[10px] font-bold"><i class="fas fa-utensils mr-1"></i> Maghrib</span>
+                                <span class="text-sm font-mono font-bold" id="time-maghrib">--:--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Main Balance Card -->
                 <div class="relative w-full h-48 rounded-[2rem] overflow-hidden shadow-2xl shadow-emerald-700/20 mb-6 group transform transition hover:scale-[1.01] duration-500 card-gradient">
                     <div class="absolute inset-0 bg-islamic-pattern opacity-10 mix-blend-overlay"></div>
@@ -583,6 +634,7 @@
         let isEditMode = false;
         let selectedIds = new Set();
         let receiptItems = [{name: 'Item 1', qty: 1, price: 0}]; 
+        let prayerInterval;
 
         // --- Animations Utilities ---
         function animateValue(id, start, end, duration) {
@@ -666,6 +718,7 @@
                 renderHistory();
             }
             fetchData();
+            initPrayerTimes();
         }
 
         async function fetchData(manual = false) {
@@ -745,6 +798,117 @@
                 showToast('Gagal update', 'error');
                 if(card) card.style.opacity = '1';
             }
+        }
+
+        // --- Music Logic ---
+        function toggleMusic() {
+            const audio = document.getElementById('bg-music');
+            const btn = document.getElementById('music-btn');
+            
+            if (audio.paused) {
+                audio.play();
+                btn.innerHTML = '<i class="fas fa-pause text-xs"></i>';
+                btn.classList.add('bg-emerald-100');
+            } else {
+                audio.pause();
+                btn.innerHTML = '<i class="fas fa-music text-xs"></i>';
+                btn.classList.remove('bg-emerald-100');
+            }
+        }
+
+        // --- Prayer Time Logic (Aladhan API) ---
+        async function initPrayerTimes() {
+            const city = 'Jakarta'; // Default city
+            const country = 'Indonesia';
+            const method = 20; // Kemenag RI
+            const today = new Date();
+            const dateStr = today.getDate() + '-' + (today.getMonth() + 1) + '-' + today.getFullYear();
+
+            // Try to get location, fallback to Jakarta
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => fetchPrayerTimes(pos.coords.latitude, pos.coords.longitude),
+                    err => fetchPrayerTimesByCity(city, country)
+                );
+            } else {
+                fetchPrayerTimesByCity(city, country);
+            }
+        }
+
+        async function fetchPrayerTimesByCity(city, country) {
+            try {
+                const res = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=${country}&method=20`);
+                const data = await res.json();
+                updatePrayerUI(data.data, city);
+            } catch (e) {
+                console.error("Failed to fetch prayer times", e);
+            }
+        }
+
+        async function fetchPrayerTimes(lat, long) {
+            try {
+                const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${long}&method=20`);
+                const data = await res.json();
+                updatePrayerUI(data.data, "Lokasi Anda");
+            } catch (e) {
+                fetchPrayerTimesByCity("Jakarta", "Indonesia");
+            }
+        }
+
+        function updatePrayerUI(data, location) {
+            const timings = data.timings;
+            const hijri = data.date.hijri;
+            
+            document.getElementById('location-name').innerText = location;
+            document.getElementById('hijri-date').innerText = `${hijri.day} ${hijri.month.en} ${hijri.year} H`;
+            document.getElementById('time-imsak').innerText = timings.Imsak;
+            document.getElementById('time-maghrib').innerText = timings.Maghrib;
+
+            startCountdown(timings);
+        }
+
+        function startCountdown(timings) {
+            if (prayerInterval) clearInterval(prayerInterval);
+            
+            prayerInterval = setInterval(() => {
+                const now = new Date();
+                const times = {
+                    imsak: parseTime(timings.Imsak),
+                    maghrib: parseTime(timings.Maghrib)
+                };
+
+                let targetTime, name;
+                
+                if (now < times.imsak) {
+                    targetTime = times.imsak;
+                    name = "Imsak";
+                } else if (now < times.maghrib) {
+                    targetTime = times.maghrib;
+                    name = "Berbuka";
+                } else {
+                    // Next day Imsak (approximate by adding 24h)
+                    targetTime = new Date(times.imsak.getTime() + 24 * 60 * 60 * 1000);
+                    name = "Imsak";
+                }
+
+                const diff = targetTime - now;
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                document.getElementById('countdown-timer').innerText = 
+                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                document.getElementById('next-prayer-name').innerText = name;
+
+            }, 1000);
+        }
+
+        function parseTime(timeStr) {
+            const [time, modifier] = timeStr.split(' ');
+            let [hours, minutes] = time.split(':');
+            const date = new Date();
+            date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+            return date;
         }
 
         // --- Delete Logic ---
