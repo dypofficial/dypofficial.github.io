@@ -10,7 +10,7 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Plus Jakarta Sans + Amiri (untuk sentuhan Arabesque) + VT323 (untuk struk) -->
+    <!-- Google Fonts: Plus Jakarta Sans + Amiri (untuk sentuhan Arabesque) + VT323 -->
     <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=VT323&display=swap" rel="stylesheet">
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,6 +18,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- html2canvas for Image Generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- jsPDF for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -89,14 +91,12 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
         
-        /* Lantern Shape using CSS */
         .lantern-string {
             width: 2px;
             background: #d97706;
             margin: 0 auto;
         }
         
-        /* Loading Animation */
         .crescent-loader {
             width: 30px;
             height: 30px;
@@ -114,28 +114,30 @@
             width: 100%;
             transform: rotate(180deg);
         }
+
+        /* Styling untuk tabel laporan */
+        .report-table th { background-color: #064e3b; color: white; padding: 8px; font-size: 10px; text-transform: uppercase; }
+        .report-table td { padding: 8px; border-bottom: 1px solid #e2e8f0; font-size: 10px; color: #334155; }
+        .report-table tr:last-child td { border-bottom: none; }
+        .report-table tr:nth-child(even) { background-color: #f8fafc; }
     </style>
 </head>
 
 <body class="text-slate-800 font-sans h-[100dvh] w-full overflow-hidden text-sm sm:text-base relative">
 
-    <!-- Background Decorations (Lanterns & Stars) -->
+    <!-- Background Decorations -->
     <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <!-- Lantern 1 -->
         <div class="absolute top-0 left-[15%] animate-float-slow">
             <div class="lantern-string h-16"></div>
             <div class="text-goldDark text-4xl drop-shadow-lg opacity-80"><i class="fas fa-mosque"></i></div>
         </div>
-        <!-- Lantern 2 -->
         <div class="absolute top-0 right-[20%] animate-float-medium" style="animation-delay: 1s">
             <div class="lantern-string h-24"></div>
             <div class="text-gold text-3xl drop-shadow-md opacity-90"><i class="fas fa-star-and-crescent"></i></div>
         </div>
-         <!-- Moon -->
          <div class="absolute top-10 right-[-20px] text-yellow-200/40 text-[150px] animate-twinkle blur-sm z-[-1]">
             <i class="fas fa-moon"></i>
         </div>
-        <!-- Stars -->
         <div class="absolute top-1/4 left-10 text-gold/30 text-xs animate-twinkle" style="animation-delay: 0.5s"><i class="fas fa-star"></i></div>
         <div class="absolute top-1/3 right-10 text-gold/30 text-sm animate-twinkle" style="animation-delay: 2s"><i class="fas fa-star"></i></div>
     </div>
@@ -160,22 +162,17 @@
 
     <!-- ================== LOGIN VIEW ================== -->
     <section id="login-view" class="h-full w-full flex flex-col items-center justify-center p-6 absolute inset-0 z-50 overflow-hidden bg-gradient-to-b from-emerald-900 to-emerald-800">
-        <!-- Islamic Pattern Overlay -->
         <div class="absolute inset-0 bg-islamic-pattern opacity-10"></div>
-
         <div class="w-full max-w-[340px] flex flex-col items-center relative z-10 animate-slide-up">
-            <!-- Icon -->
             <div class="w-24 h-24 bg-gradient-to-tr from-emerald-600 to-teal-500 rounded-full flex items-center justify-center shadow-2xl shadow-emerald-900/50 mb-6 border-4 border-emerald-400/20 relative group">
                 <div class="absolute inset-0 rounded-full border border-gold/40 animate-spin-slow" style="animation-duration: 10s"></div>
                 <i class="fas fa-kaaba text-4xl text-white drop-shadow-md"></i>
             </div>
-
             <div class="glass-panel w-full p-8 rounded-3xl shadow-2xl relative overflow-hidden bg-white/95 border-0">
                 <div class="text-center mb-8">
                     <h1 class="text-3xl font-serif font-bold text-emerald-900">Dompet Ramadan</h1>
                     <p class="text-emerald-600/80 text-xs font-medium mt-1 uppercase tracking-widest">Kelola Keuangan Penuh Berkah</p>
                 </div>
-
                 <form onsubmit="handleLogin(event)" class="space-y-4">
                     <div class="space-y-1.5 group">
                         <label class="text-[10px] font-bold text-emerald-700 uppercase ml-4">Email</label>
@@ -186,7 +183,6 @@
                             <input type="email" id="email" class="w-full pl-10 pr-4 py-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl text-emerald-900 placeholder-emerald-300 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all outline-none font-medium text-sm" placeholder="email@contoh.com" required value="admin@uangku.com">
                         </div>
                     </div>
-
                     <div class="space-y-1.5 group">
                         <label class="text-[10px] font-bold text-emerald-700 uppercase ml-4">Password</label>
                         <div class="relative transition-transform duration-300 group-focus-within:scale-[1.02]">
@@ -199,7 +195,6 @@
                             </button>
                         </div>
                     </div>
-
                     <button type="submit" class="w-full bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-emerald-700/30 mt-4 relative overflow-hidden group active:scale-[0.98] transition-all">
                         <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
                         <span class="relative flex items-center justify-center gap-2">
@@ -248,13 +243,10 @@
             <!-- Dashboard View -->
             <div id="view-dashboard" class="animate-slide-up">
                 
-                <!-- Main Balance Card (Islamic Art Style) -->
+                <!-- Main Balance Card -->
                 <div class="relative w-full h-48 rounded-[2rem] overflow-hidden shadow-2xl shadow-emerald-700/20 mb-6 group transform transition hover:scale-[1.01] duration-500 card-gradient">
-                    <!-- Pattern BG -->
                     <div class="absolute inset-0 bg-islamic-pattern opacity-10 mix-blend-overlay"></div>
                     <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-gold/20 rounded-full blur-2xl"></div>
-                    
-                    <!-- Content -->
                     <div class="relative z-10 p-6 h-full flex flex-col justify-between text-white">
                         <div class="flex justify-between items-start">
                             <div>
@@ -265,7 +257,6 @@
                                 <i class="fas fa-wallet text-gold"></i>
                             </div>
                         </div>
-                        
                         <div class="flex gap-3 mt-2">
                             <div class="flex-1 bg-emerald-900/30 backdrop-blur-md rounded-xl p-3 border border-emerald-400/20">
                                 <div class="flex items-center gap-1.5 mb-1">
@@ -292,12 +283,10 @@
                             <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-emerald-400 text-xs group-focus-within:text-emerald-600 transition-colors"></i>
                             <input type="text" id="search-input" onkeyup="renderHistory()" placeholder="Cari sedekah, belanja..." class="w-full bg-white border border-emerald-100 rounded-full pl-10 pr-4 py-2.5 text-xs font-medium shadow-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all placeholder-emerald-300/70 text-emerald-800">
                         </div>
-                        
-                         <!-- NEW BUTTON: Create Receipt -->
+                         <!-- Struk Button -->
                          <button onclick="openReceiptModal()" class="w-9 h-9 rounded-full bg-emerald-50 border border-emerald-100 shadow-sm flex items-center justify-center text-emerald-600 hover:text-emerald-800 hover:bg-emerald-100 active:scale-90 transition-all shrink-0">
                             <i class="fas fa-receipt text-xs"></i>
                         </button>
-                        
                         <div class="relative shrink-0">
                             <select id="month-filter" onchange="renderHistory()" class="appearance-none bg-emerald-50 text-emerald-800 text-xs font-bold rounded-full pl-4 pr-8 py-2.5 border border-emerald-100 shadow-sm focus:ring-2 focus:ring-emerald-500 h-full w-[100px] truncate">
                                 <!-- JS -->
@@ -328,6 +317,13 @@
 
             <!-- Report View -->
             <div id="view-report" class="hidden pb-safe space-y-6 animate-slide-up">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-serif font-bold text-emerald-900 text-lg">Ringkasan Laporan</h3>
+                    <button onclick="openFullReportModal()" class="bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-emerald-800/20 active:scale-95 transition flex items-center gap-2">
+                        <i class="fas fa-file-export"></i> Ekspor Laporan
+                    </button>
+                </div>
+
                 <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-emerald-50 relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-emerald-50 rounded-bl-full opacity-50"></div>
                     <h3 class="font-serif font-bold text-emerald-900 mb-6 text-base flex items-center gap-2 relative z-10">
@@ -349,7 +345,7 @@
 
         </main>
 
-        <!-- Floating Action Button (Center Jewel) -->
+        <!-- Floating Action Button -->
         <div class="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,20px))] right-5 z-40">
             <button id="main-fab" onclick="openModal()" class="group relative w-14 h-14 rounded-2xl bg-gradient-to-br from-gold to-goldDark text-white shadow-xl shadow-gold/40 flex items-center justify-center text-xl overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 hover:rotate-90 border-2 border-white/20">
                 <div class="absolute inset-0 bg-white/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -437,17 +433,14 @@
         </div>
     </div>
 
-    <!-- NEW: Modal Receipt Generator -->
+    <!-- Modal Receipt Generator -->
     <div id="modal-receipt" class="fixed inset-0 bg-emerald-900/80 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div id="receipt-content" class="bg-surface w-full max-w-lg rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden transform scale-95 transition-transform duration-300">
-            <!-- Header -->
             <div class="p-5 border-b border-emerald-100 flex justify-between items-center bg-white">
                 <h3 class="font-serif font-bold text-emerald-900 text-lg flex items-center gap-2"><i class="fas fa-receipt text-gold"></i> Buat Struk</h3>
                 <button onclick="closeReceiptModal()" class="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition"><i class="fas fa-times"></i></button>
             </div>
-            
             <div class="flex-1 overflow-y-auto no-scrollbar p-5 space-y-6">
-                <!-- Input Form -->
                 <div class="space-y-4">
                     <div class="grid grid-cols-2 gap-3">
                          <div class="bg-white p-3 rounded-xl border border-emerald-100">
@@ -459,60 +452,121 @@
                             <input type="date" id="receipt-date" class="w-full text-sm font-bold text-emerald-900 outline-none" onchange="updateReceiptPreview()">
                         </div>
                     </div>
-
-                    <!-- Items List -->
                     <div class="bg-white p-4 rounded-xl border border-emerald-100">
                         <div class="flex justify-between items-center mb-2">
                              <label class="text-[10px] font-bold text-emerald-400">Daftar Barang</label>
                              <button onclick="addReceiptItem()" class="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded hover:bg-emerald-100 transition">+ Tambah</button>
                         </div>
-                        <div id="receipt-items-container" class="space-y-2">
-                            <!-- Items will be injected here -->
-                        </div>
+                        <div id="receipt-items-container" class="space-y-2"></div>
                     </div>
                 </div>
-
-                <!-- Live Preview -->
                 <div class="border-t-2 border-dashed border-emerald-200 pt-4">
                      <p class="text-center text-xs text-emerald-400 font-bold mb-2 uppercase tracking-widest">Preview Struk</p>
-                     
                      <div id="receipt-preview-container" class="bg-white p-6 shadow-sm mx-auto w-full max-w-[320px] font-mono text-sm text-slate-800 leading-tight relative">
-                        <!-- Paper Tear Effect Top -->
-                        <div class="absolute -top-[14px] left-0 w-full h-[15px] bg-white" style="mask-image: radial-gradient(circle at 10px 10px, transparent 8px, black 9px); mask-size: 20px 20px; mask-repeat: repeat-x; -webkit-mask-image: radial-gradient(circle at 10px 10px, transparent 8px, black 9px); -webkit-mask-size: 20px 20px; -webkit-mask-repeat: repeat-x; transform: rotate(180deg);"></div>
-                        
+                        <div class="absolute -top-[14px] left-0 w-full h-[15px] bg-white paper-tear" style="transform: rotate(180deg);"></div>
                         <div class="text-center mb-4">
                             <h2 class="font-bold text-xl uppercase tracking-widest" id="preview-store">DOMPET RAMADAN</h2>
                             <p class="text-[10px] text-slate-500 mt-1" id="preview-date">...</p>
                         </div>
-                        
                         <div class="border-b border-dashed border-slate-300 mb-2"></div>
-                        
-                        <div id="preview-items" class="space-y-1 mb-2">
-                            <!-- Preview Items -->
-                        </div>
-                        
+                        <div id="preview-items" class="space-y-1 mb-2"></div>
                         <div class="border-b border-dashed border-slate-300 mb-2"></div>
-                        
                         <div class="flex justify-between font-bold text-lg">
                             <span>TOTAL</span>
                             <span id="preview-total">Rp 0</span>
                         </div>
-                        
                         <div class="text-center mt-6 text-[10px] text-slate-400">
                             <p>Terima Kasih</p>
                             <p>Barakallah Fikum</p>
                         </div>
-
-                         <!-- Paper Tear Effect Bottom -->
-                         <div class="absolute -bottom-[14px] left-0 w-full h-[15px] bg-white" style="mask-image: radial-gradient(circle at 10px 10px, transparent 8px, black 9px); mask-size: 20px 20px; mask-repeat: repeat-x; -webkit-mask-image: radial-gradient(circle at 10px 10px, transparent 8px, black 9px); -webkit-mask-size: 20px 20px; -webkit-mask-repeat: repeat-x;"></div>
+                         <div class="absolute -bottom-[14px] left-0 w-full h-[15px] bg-white paper-tear"></div>
                      </div>
                 </div>
             </div>
-
-            <!-- Footer Actions -->
             <div class="p-5 border-t border-emerald-100 bg-emerald-50 flex gap-3">
                  <button onclick="downloadReceiptAsImage()" class="flex-1 bg-emerald-800 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-emerald-900 transition flex items-center justify-center gap-2">
                     <i class="fas fa-image"></i> Simpan Gambar (JPG/PNG)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Modal Full Monthly Report -->
+    <div id="modal-full-report" class="fixed inset-0 bg-emerald-900/90 backdrop-blur-md z-[70] hidden flex items-center justify-center p-2 opacity-0 transition-opacity duration-300">
+        <div id="report-content-wrapper" class="bg-slate-100 w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[95vh] overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-white shrink-0">
+                <h3 class="font-serif font-bold text-emerald-900 text-base flex items-center gap-2">
+                    <i class="fas fa-file-invoice text-gold"></i> Laporan Bulanan
+                </h3>
+                <button onclick="closeFullReportModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 transition"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-4 bg-slate-200/50 flex justify-center">
+                <!-- Report Canvas / Container for A4 Look -->
+                <div id="monthly-report-container" class="bg-white shadow-xl p-8 w-full max-w-[595px] min-h-[842px] text-slate-800 relative">
+                    <!-- Header Report -->
+                    <div class="flex justify-between items-start border-b-2 border-emerald-800 pb-6 mb-6">
+                        <div>
+                            <h1 class="text-2xl font-serif font-bold text-emerald-900 uppercase tracking-widest">Laporan Keuangan</h1>
+                            <p class="text-sm text-emerald-600 font-semibold" id="report-period">Periode: -</p>
+                        </div>
+                        <div class="text-right">
+                            <h2 class="font-bold text-lg text-goldDark">Dompet Ramadan</h2>
+                            <p class="text-[10px] text-slate-400">Generated by DompetKu App</p>
+                        </div>
+                    </div>
+
+                    <!-- Summary Cards -->
+                    <div class="grid grid-cols-3 gap-4 mb-8">
+                        <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100">
+                            <p class="text-[10px] font-bold text-emerald-600 uppercase">Pemasukan</p>
+                            <p class="text-sm font-bold text-emerald-800" id="report-income">Rp 0</p>
+                        </div>
+                        <div class="bg-red-50 p-3 rounded-lg border border-red-100">
+                            <p class="text-[10px] font-bold text-red-600 uppercase">Pengeluaran</p>
+                            <p class="text-sm font-bold text-red-800" id="report-expense">Rp 0</p>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                            <p class="text-[10px] font-bold text-slate-600 uppercase">Sisa Saldo</p>
+                            <p class="text-sm font-bold text-slate-800" id="report-balance">Rp 0</p>
+                        </div>
+                    </div>
+
+                    <!-- Detail Table -->
+                    <div class="mb-8">
+                        <h4 class="font-bold text-xs text-emerald-900 mb-2 uppercase border-b border-emerald-200 pb-1">Rincian Transaksi</h4>
+                        <table class="w-full text-left report-table">
+                            <thead>
+                                <tr>
+                                    <th class="rounded-l-md">Tanggal</th>
+                                    <th>Keterangan</th>
+                                    <th>Kategori</th>
+                                    <th class="text-right rounded-r-md">Jumlah</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-table-body">
+                                <!-- Data injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="absolute bottom-8 left-8 right-8 text-center border-t border-slate-200 pt-4">
+                        <p class="text-[10px] text-slate-400 italic">"Dan apa saja yang kamu infakkan, Allah akan menggantinya..." (QS. Saba: 39)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="p-4 bg-white border-t border-slate-200 shrink-0 grid grid-cols-3 gap-3">
+                <button onclick="downloadFullReport('pdf')" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex flex-col items-center justify-center gap-1 text-xs">
+                    <i class="fas fa-file-pdf text-lg"></i> Simpan PDF
+                </button>
+                <button onclick="downloadFullReport('jpg')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex flex-col items-center justify-center gap-1 text-xs">
+                    <i class="fas fa-file-image text-lg"></i> Simpan JPG
+                </button>
+                <button onclick="downloadFullReport('png')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex flex-col items-center justify-center gap-1 text-xs">
+                    <i class="fas fa-image text-lg"></i> Simpan PNG
                 </button>
             </div>
         </div>
@@ -528,7 +582,7 @@
         let barChart = null;
         let isEditMode = false;
         let selectedIds = new Set();
-        let receiptItems = [{name: 'Item 1', qty: 1, price: 0}]; // Initial receipt item
+        let receiptItems = [{name: 'Item 1', qty: 1, price: 0}]; 
 
         // --- Animations Utilities ---
         function animateValue(id, start, end, duration) {
@@ -536,7 +590,6 @@
             if(!obj) return;
             const startNum = 0;
             const endNum = parseInt(String(end).replace(/[^0-9-]/g, ''));
-            
             let startTimestamp = null;
             const step = (timestamp) => {
                 if (!startTimestamp) startTimestamp = timestamp;
@@ -548,7 +601,7 @@
             window.requestAnimationFrame(step);
         }
 
-        // --- Auth & Init Logic (Same as before) ---
+        // --- Auth & Init Logic ---
         function checkAuth() {
             const isLoggedIn = localStorage.getItem('dompetku_auth');
             isLoggedIn ? showApp() : showLogin();
@@ -558,7 +611,6 @@
             e.preventDefault();
             const email = document.getElementById('email').value;
             const pass = document.getElementById('password').value;
-
             if (email && pass) {
                 const btn = e.target.querySelector('button[type="submit"]');
                 const originalContent = btn.innerHTML;
@@ -595,15 +647,14 @@
 
         function togglePassword() {
             const input = document.getElementById('password');
-            if (input.type === "password") input.type = "text";
-            else input.type = "password";
+            input.type = input.type === "password" ? "text" : "password";
         }
 
         // --- App Logic ---
         function initApp() {
             const today = new Date().toISOString().split('T')[0];
             document.querySelector('input[name="tanggal"]').value = today;
-            document.getElementById('receipt-date').value = today; // Init Receipt Date
+            document.getElementById('receipt-date').value = today;
             
             const options = { weekday: 'short', day: 'numeric', month: 'short' };
             document.getElementById('current-date').textContent = new Date().toLocaleDateString('id-ID', options);
@@ -645,7 +696,6 @@
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
             const originalHTML = btn.innerHTML;
-            
             btn.disabled = true;
             btn.innerHTML = '<div class="crescent-loader w-5 h-5 border-2"></div>';
 
@@ -661,7 +711,6 @@
                     body: JSON.stringify(data)
                 });
                 const result = await response.json();
-
                 if (result.status === 'success') {
                     showToast('Barakallah, Tersimpan!', 'success');
                     closeModal();
@@ -683,7 +732,6 @@
             if(!confirm("Sudah lunas? Alhamdulillah.")) return;
             const card = document.getElementById(`card-${id}`);
             if(card) card.style.opacity = '0.5';
-
             try {
                 const response = await fetch(`${WEB_APP_URL}?action=updateStatus`, {
                     method: 'POST',
@@ -705,7 +753,6 @@
             const btn = document.getElementById('edit-mode-btn');
             const fab = document.getElementById('main-fab');
             const helper = document.getElementById('edit-helper');
-            
             if (isEditMode) {
                 btn.classList.add('bg-red-50', 'text-red-500', 'border-red-200');
                 btn.innerHTML = '<i class="fas fa-times"></i>';
@@ -761,14 +808,12 @@
         async function deleteSelectedItems() {
             if (selectedIds.size === 0) return;
             if (!confirm(`Hapus ${selectedIds.size} data?`)) return;
-
             const idsToDelete = Array.from(selectedIds);
             const originalData = [...rawData]; 
             rawData = rawData.filter(item => !selectedIds.has(item.id));
             localStorage.setItem('dompetku_data', JSON.stringify(rawData));
             toggleEditMode(); 
             showToast('Menghapus...', 'success');
-
             try {
                 await fetch(`${WEB_APP_URL}?action=delete`, {
                     method: 'POST', body: JSON.stringify({ ids: idsToDelete })
@@ -781,7 +826,107 @@
             }
         }
 
-        // --- NEW: Receipt Logic ---
+        // --- NEW: Full Report Generator Logic ---
+        function openFullReportModal() {
+            const monthVal = document.getElementById('month-filter').value;
+            if(!monthVal) {
+                showToast('Pilih bulan terlebih dahulu', 'error');
+                return;
+            }
+            
+            // Generate Data
+            const [y, m] = monthVal.split('-');
+            const monthName = new Date(y, m - 1).toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+            document.getElementById('report-period').innerText = `Periode: ${monthName}`;
+            
+            let filteredData = rawData.filter(item => item.tanggal.startsWith(monthVal));
+            // Sort by Date
+            filteredData.sort((a,b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+            let totalIncome = 0;
+            let totalExpense = 0;
+            const tableBody = document.getElementById('report-table-body');
+            let tableHtml = '';
+
+            if(filteredData.length === 0) {
+                tableHtml = '<tr><td colspan="4" class="text-center italic text-slate-400 py-4">Tidak ada data transaksi.</td></tr>';
+            } else {
+                filteredData.forEach(item => {
+                    const val = parseInt(item.jumlah);
+                    const isExp = ['Keluar', 'Hutang', 'Piutang'].includes(item.tipe);
+                    if(isExp) totalExpense += val;
+                    else totalIncome += val;
+
+                    tableHtml += `
+                    <tr>
+                        <td>${new Date(item.tanggal).toLocaleDateString('id-ID', {day:'numeric', month:'short'})}</td>
+                        <td class="font-medium">${item.keterangan}</td>
+                        <td><span class="px-2 py-0.5 rounded text-[9px] ${isExp ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}">${item.tipe}</span></td>
+                        <td class="text-right font-bold ${isExp ? 'text-red-600' : 'text-emerald-600'}">${formatRupiah(val)}</td>
+                    </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('report-income').innerText = formatRupiah(totalIncome);
+            document.getElementById('report-expense').innerText = formatRupiah(totalExpense);
+            document.getElementById('report-balance').innerText = formatRupiah(totalIncome - totalExpense);
+            tableBody.innerHTML = tableHtml;
+
+            // Show Modal
+            const modal = document.getElementById('modal-full-report');
+            const wrapper = document.getElementById('report-content-wrapper');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                wrapper.classList.remove('scale-95');
+                wrapper.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeFullReportModal() {
+            const modal = document.getElementById('modal-full-report');
+            const wrapper = document.getElementById('report-content-wrapper');
+            modal.classList.add('opacity-0');
+            wrapper.classList.remove('scale-100');
+            wrapper.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function downloadFullReport(format) {
+            const element = document.getElementById('monthly-report-container');
+            const btn = event.currentTarget; // Get clicked button
+            const originalContent = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
+                if (format === 'pdf') {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                    pdf.save(`Laporan-DompetRamadan-${Date.now()}.pdf`);
+                } else {
+                    const link = document.createElement('a');
+                    link.download = `Laporan-DompetRamadan-${Date.now()}.${format}`;
+                    link.href = canvas.toDataURL(`image/${format === 'jpg' ? 'jpeg' : 'png'}`);
+                    link.click();
+                }
+                showToast('Laporan berhasil disimpan!', 'success');
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }).catch(err => {
+                console.error(err);
+                showToast('Gagal menyimpan', 'error');
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            });
+        }
+
+        // --- Receipt Logic ---
         function openReceiptModal() {
             const modal = document.getElementById('modal-receipt');
             const content = document.getElementById('receipt-content');
@@ -835,12 +980,9 @@
         }
 
         function updateReceiptPreview() {
-            // Update Header
             document.getElementById('preview-store').innerText = document.getElementById('receipt-store').value || 'TOKO';
             const date = document.getElementById('receipt-date').value;
             document.getElementById('preview-date').innerText = date ? new Date(date).toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'}) : '...';
-
-            // Update Items
             const itemsContainer = document.getElementById('preview-items');
             let total = 0;
             itemsContainer.innerHTML = receiptItems.map(item => {
@@ -856,31 +998,20 @@
                     <div class="w-1/3 text-right font-bold">${formatRupiah(subtotal)}</div>
                 </div>`;
             }).join('');
-
             document.getElementById('preview-total').innerText = formatRupiah(total);
         }
 
-        // --- NEW: Download as Image Logic ---
         function downloadReceiptAsImage() {
             const element = document.getElementById('receipt-preview-container');
             const btn = document.querySelector('#modal-receipt button.bg-emerald-800');
             const originalText = btn.innerHTML;
-            
-            // Visual Feedback
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
             btn.disabled = true;
-
-            html2canvas(element, {
-                scale: 2, // High resolution
-                backgroundColor: '#ffffff',
-                logging: false,
-                useCORS: true
-            }).then(canvas => {
+            html2canvas(element, { scale: 2, backgroundColor: '#ffffff', logging: false, useCORS: true }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = 'Struk-Dompet-Ramadan-' + Date.now() + '.png';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-                
                 btn.innerHTML = originalText;
                 btn.disabled = false;
                 showToast('Struk berhasil disimpan!', 'success');
@@ -900,13 +1031,11 @@
                 const d = new Date(item.tanggal);
                 return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
             }))].sort().reverse();
-
             select.innerHTML = uniqueMonths.map(m => {
                 const [y, monthNum] = m.split('-');
                 const monthName = new Date(y, monthNum - 1).toLocaleString('id-ID', { month: 'long' });
                 return `<option value="${m}">${monthName} ${y}</option>`;
             }).join('');
-            
             if (uniqueMonths.length === 0) select.innerHTML = `<option value="">Bulan Ini</option>`;
             if (currentVal && uniqueMonths.includes(currentVal)) select.value = currentVal;
             else if (uniqueMonths.length > 0) select.value = uniqueMonths[0];
@@ -916,59 +1045,44 @@
             const filterValue = document.getElementById('month-filter').value;
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const container = document.getElementById('transaction-list');
-            
             let filteredData = rawData;
             if (filterValue) filteredData = filteredData.filter(item => item.tanggal.startsWith(filterValue));
             if (searchTerm) filteredData = filteredData.filter(item => item.keterangan.toLowerCase().includes(searchTerm) || item.jumlah.toString().includes(searchTerm));
-
             let income = 0, expense = 0;
             filteredData.forEach(item => {
                 const val = parseInt(item.jumlah);
                 if (item.tipe === 'Masuk') income += val;
                 if (['Keluar', 'Hutang', 'Piutang'].includes(item.tipe)) expense += val;
             });
-
             animateValue('total-balance', 0, income - expense, 800);
             document.getElementById('total-income').textContent = formatRupiah(income);
             document.getElementById('total-expense').textContent = formatRupiah(expense);
-
             const activeTab = document.querySelector('.nav-btn.active').dataset.target;
             if (activeTab === 'hutang') { renderDebtList(rawData, searchTerm, 'Hutang'); return; }
             else if (activeTab === 'piutang') { renderReceivableList(rawData, searchTerm); return; }
             else if (activeTab === 'laporan') { renderReports(filteredData); return; }
-
             if (filteredData.length === 0) {
-                container.innerHTML = `
-                <div class="flex flex-col items-center justify-center py-16 text-emerald-300 animate-slide-up">
-                    <i class="fas fa-moon text-4xl mb-3 opacity-30"></i>
-                    <p class="text-xs font-medium">Belum ada catatan.</p>
-                </div>`;
+                container.innerHTML = `<div class="flex flex-col items-center justify-center py-16 text-emerald-300 animate-slide-up"><i class="fas fa-moon text-4xl mb-3 opacity-30"></i><p class="text-xs font-medium">Belum ada catatan.</p></div>`;
                 return;
             }
-
             container.innerHTML = filteredData.map((item, index) => {
                 const isExpense = ['Keluar', 'Hutang', 'Piutang'].includes(item.tipe);
                 const colorClass = isExpense ? 'text-red-500' : 'text-emerald-600';
-                
                 let iconClass = 'bg-slate-50 text-slate-400';
                 let iconName = 'fa-coins';
                 if(item.tipe === 'Masuk') { iconClass = 'bg-emerald-100 text-emerald-600'; iconName = 'fa-arrow-down'; }
                 if(item.tipe === 'Keluar') { iconClass = 'bg-red-50 text-red-500'; iconName = 'fa-shopping-basket'; }
                 if(item.tipe === 'Hutang') { iconClass = 'bg-orange-50 text-orange-500'; iconName = 'fa-file-invoice'; }
                 if(item.tipe === 'Piutang') { iconClass = 'bg-teal-50 text-teal-600'; iconName = 'fa-hand-holding-usd'; }
-                
                 const isSelected = selectedIds.has(item.id);
                 const selectStyle = isSelected ? 'bg-emerald-50 border-emerald-300 ring-1 ring-emerald-300' : 'bg-white border-transparent';
                 const delay = Math.min(index * 50, 500);
-
                 return `
                 <div id="container-${item.id}" onclick="isEditMode ? toggleSelection('${item.id}') : null" 
                      class="${selectStyle} p-4 rounded-2xl shadow-sm border flex items-center justify-between active:scale-[0.98] transition-all duration-300 select-none cursor-pointer animate-slide-up" 
                      style="animation-delay: ${delay}ms; animation-fill-mode: forwards; opacity: 0;">
-                    
                     <div class="flex items-center gap-4 overflow-hidden">
                          ${isEditMode ? `<div class="w-5 h-5 rounded-full border-2 ${isSelected ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300'} flex items-center justify-center"><i class="fas fa-check text-white text-[10px] ${isSelected?'':'hidden'}"></i></div>` : ''}
-                        
                         <div class="w-10 h-10 rounded-full ${iconClass} flex items-center justify-center shrink-0">
                             <i class="fas ${iconName} text-xs"></i>
                         </div>
@@ -988,14 +1102,11 @@
             const container = document.getElementById('transaction-list');
             let debts = data.filter(item => item.tipe === type);
             if(search) debts = debts.filter(item => item.keterangan.toLowerCase().includes(search));
-
             const totalHutang = debts.reduce((acc, curr) => acc + parseInt(curr.jumlah), 0);
             const totalBelumLunas = debts.filter(p => p.status !== 'Lunas').reduce((acc, curr) => acc + parseInt(curr.jumlah), 0);
             const percent = totalHutang > 0 ? ((totalHutang - totalBelumLunas)/totalHutang)*100 : 0;
-
             let bg = type === 'Hutang' ? 'from-orange-400 to-red-500' : 'from-teal-400 to-emerald-500';
             let title = type === 'Hutang' ? 'Hutang' : 'Piutang';
-
             let html = `
             <div class="bg-gradient-to-r ${bg} rounded-[1.5rem] p-5 text-white shadow-lg mb-6 animate-fade-in relative overflow-hidden">
                 <div class="absolute right-0 top-0 opacity-10 text-6xl"><i class="fas fa-kaaba"></i></div>
@@ -1013,12 +1124,10 @@
                     <div class="bg-white h-full transition-all duration-1000 ease-out" style="width: ${percent}%"></div>
                 </div>
             </div>`;
-
             if (debts.length === 0) {
                 container.innerHTML = html + `<div class="text-center py-10 text-slate-400 text-xs">Bersih dari ${title}, Alhamdulillah.</div>`;
                 return;
             }
-
             html += debts.map((item, index) => {
                 const isLunas = item.status === 'Lunas';
                 return `
@@ -1045,7 +1154,6 @@
             if (typeof Chart === 'undefined') return;
             if(pieChart) pieChart.destroy();
             if(barChart) barChart.destroy();
-
             Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
             const ctxPie = document.getElementById('chart-pie').getContext('2d');
             pieChart = new Chart(ctxPie, {
@@ -1066,19 +1174,15 @@
                 },
                 options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 6, font: {size: 10} } } } }
             });
-
-            // Bar Chart logic same as before...
             const dailyData = {};
             for(let i=6; i>=0; i--) {
                 const d = new Date(); d.setDate(d.getDate() - i);
                 dailyData[d.toISOString().split('T')[0]] = { label: d.toLocaleDateString('id-ID', {weekday:'short'}), val: 0 };
             }
             data.forEach(item => { if(dailyData[item.tanggal]) dailyData[item.tanggal].val += parseInt(item.jumlah); });
-
             const ctxBar = document.getElementById('chart-bar').getContext('2d');
             const gradient = ctxBar.createLinearGradient(0, 0, 0, 300);
             gradient.addColorStop(0, '#10b981'); gradient.addColorStop(1, '#047857');
-
             barChart = new Chart(ctxBar, {
                 type: 'bar',
                 data: {
