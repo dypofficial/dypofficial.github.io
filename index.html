@@ -139,7 +139,8 @@
 <body class="text-slate-800 font-sans h-[100dvh] w-full overflow-hidden text-sm sm:text-base relative">
 
     <!-- Audio Element (Dynamic Source) -->
-    <audio id="bg-music"></audio>
+    <!-- Preload none to save bandwidth until played -->
+    <audio id="bg-music" preload="auto"></audio>
 
     <!-- Background Decorations -->
     <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -678,7 +679,7 @@
         
         // --- NEW: Audio Playlist Logic ---
         // GANTI URL DI BAWAH INI DENGAN PATH FILE LOKAL
-        // Pastikan file .mp3 sudah ada di folder "audio"
+        // Pastikan file .mp3 sudah ada di folder "audio" dengan nama yang sesuai
         const playlist = [
             { title: "Nasyid Pilihan", url: "audio/audio1.mp3" },
             { title: "Instrumen Tenang", url: "audio/audio2.mp3" },
@@ -688,16 +689,34 @@
         let currentTrackIndex = 0;
         const audioPlayer = document.getElementById('bg-music');
 
-        // Init Audio
-        audioPlayer.src = playlist[0].url;
-        audioPlayer.addEventListener('ended', () => changeTrack('next')); // Auto next
+        // Handle Audio Errors Gracefully
+        audioPlayer.addEventListener('error', (e) => {
+            console.error("Audio Error:", e);
+            const err = audioPlayer.error;
+            let msg = 'Gagal memuat file.';
+            if(err.code === 4) msg = 'File audio tidak ditemukan/didukung.';
+            showToast(msg, 'error');
+            updateMusicUI(false);
+        });
 
-        function toggleMusic() {
+        // Auto next track logic
+        audioPlayer.addEventListener('ended', () => changeTrack('next'));
+
+        async function toggleMusic() {
             if (audioPlayer.paused) {
-                audioPlayer.play().then(() => updateMusicUI(true)).catch(e => {
-                    console.log(e);
-                    showToast('File audio tidak ditemukan!', 'error');
-                });
+                // If initial state (no src set), load first track
+                if (!audioPlayer.src || audioPlayer.src === window.location.href) {
+                     playTrack(currentTrackIndex);
+                } else {
+                    try {
+                        await audioPlayer.play();
+                        updateMusicUI(true);
+                    } catch (err) {
+                        console.error("Toggle Play Error:", err);
+                        updateMusicUI(false);
+                        showToast("Klik lagu di daftar putar dulu", 'warning');
+                    }
+                }
             } else {
                 audioPlayer.pause();
                 updateMusicUI(false);
@@ -713,17 +732,31 @@
             playTrack(currentTrackIndex);
         }
 
-        function playTrack(index) {
+        async function playTrack(index) {
+            if (index < 0 || index >= playlist.length) index = 0;
             currentTrackIndex = index;
-            audioPlayer.src = playlist[index].url;
-            audioPlayer.play().then(() => {
+            const song = playlist[index];
+            
+            // Set source
+            audioPlayer.src = song.url;
+            audioPlayer.load(); // Reset buffer state
+
+            try {
+                await audioPlayer.play();
                 updateMusicUI(true);
                 renderPlaylist();
-                showToast(`Memutar: ${playlist[index].title}`);
-            }).catch(e => {
-                console.error("Error playing:", e);
-                showToast('File audio tidak ditemukan!', 'error');
-            });
+                showToast(`Memutar: ${song.title}`);
+            } catch (e) {
+                console.warn("Autoplay/Interrupted:", e);
+                updateMusicUI(false);
+                if (e.name === 'NotAllowedError') {
+                    showToast("Ketuk tombol putar untuk mulai", 'warning');
+                } else if (e.name === 'AbortError') {
+                    // Ignored (user skip too fast)
+                } else {
+                    showToast('Gagal memutar audio', 'error');
+                }
+            }
         }
 
         function updateMusicUI(isPlaying) {
