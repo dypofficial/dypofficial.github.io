@@ -107,15 +107,32 @@
         .report-table tr:last-child td { border-bottom: none; }
         .report-table tr:nth-child(even) { background-color: #f8fafc; }
         
-        /* Music Equalizer Mini */
-        .equalizer-mini span {
-            display: inline-block; width: 2px; background-color: #10b981;
-            animation: equalize 1s infinite;
+        /* === RAMADAN EQUALIZER ANIMATION === */
+        .eq-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 2px;
+            height: 14px;
+            width: 18px;
         }
-        .equalizer-mini span:nth-child(1) { height: 6px; animation-delay: 0.1s; }
-        .equalizer-mini span:nth-child(2) { height: 10px; animation-delay: 0.2s; }
-        .equalizer-mini span:nth-child(3) { height: 5px; animation-delay: 0.3s; }
-        @keyframes equalize { 0% { height: 4px; } 50% { height: 10px; } 100% { height: 4px; } }
+        
+        .eq-bar {
+            width: 3px;
+            background-color: #fbbf24; /* Gold Color */
+            border-radius: 2px 2px 0 0;
+            animation: eq-bounce 1s ease-in-out infinite;
+        }
+        
+        .eq-bar:nth-child(1) { height: 6px; animation-delay: 0.1s; }
+        .eq-bar:nth-child(2) { height: 12px; animation-delay: 0.2s; }
+        .eq-bar:nth-child(3) { height: 8px; animation-delay: 0.4s; }
+        .eq-bar:nth-child(4) { height: 5px; animation-delay: 0.0s; }
+
+        @keyframes eq-bounce {
+            0%, 100% { height: 4px; opacity: 0.7; }
+            50% { height: 14px; opacity: 1; background-color: #d97706; }
+        }
     </style>
 </head>
 
@@ -229,7 +246,8 @@
                         <button onclick="changeTrack('prev')" class="w-8 h-8 flex items-center justify-center text-emerald-400 hover:text-emerald-600 active:scale-90 transition rounded-full">
                             <i class="fas fa-step-backward text-xs"></i>
                         </button>
-                        <button onclick="toggleMusic()" id="play-pause-btn" class="w-8 h-8 flex items-center justify-center bg-white text-emerald-600 shadow-sm rounded-full active:scale-90 transition border border-emerald-50">
+                        <button onclick="toggleMusic()" id="play-pause-btn" class="w-9 h-9 flex items-center justify-center bg-white text-emerald-600 shadow-sm rounded-full active:scale-90 transition border border-emerald-50 relative overflow-hidden">
+                            <!-- Icon Play/Pause akan dihandle JS -->
                             <i class="fas fa-play text-xs pl-0.5"></i>
                         </button>
                         <button onclick="changeTrack('next')" class="w-8 h-8 flex items-center justify-center text-emerald-400 hover:text-emerald-600 active:scale-90 transition rounded-full">
@@ -659,11 +677,12 @@
         let prayerInterval;
         
         // --- NEW: Audio Playlist Logic ---
-        // GANTI URL DI BAWAH INI DENGAN FILE MP3 SERVER ANDA
+        // GANTI URL DI BAWAH INI DENGAN PATH FILE LOKAL
+        // Pastikan file .mp3 sudah ada di folder "audio"
         const playlist = [
-            { title: "Islami", url: "audio/audio1.mp3" },
+            { title: "Nasyid Pilihan", url: "audio/audio1.mp3" },
             { title: "Instrumen Tenang", url: "audio/audio2.mp3" },
-            { title: "Latar Ramadan", url: "audio/audio3.mp3" } // Contoh path lokal/server
+            { title: "Latar Ramadan", url: "audio/audio3.mp3" } 
         ];
         
         let currentTrackIndex = 0;
@@ -675,7 +694,10 @@
 
         function toggleMusic() {
             if (audioPlayer.paused) {
-                audioPlayer.play().then(() => updateMusicUI(true)).catch(e => console.log(e));
+                audioPlayer.play().then(() => updateMusicUI(true)).catch(e => {
+                    console.log(e);
+                    showToast('File audio tidak ditemukan!', 'error');
+                });
             } else {
                 audioPlayer.pause();
                 updateMusicUI(false);
@@ -698,13 +720,23 @@
                 updateMusicUI(true);
                 renderPlaylist();
                 showToast(`Memutar: ${playlist[index].title}`);
-            }).catch(e => console.error("Error playing:", e));
+            }).catch(e => {
+                console.error("Error playing:", e);
+                showToast('File audio tidak ditemukan!', 'error');
+            });
         }
 
         function updateMusicUI(isPlaying) {
             const btn = document.getElementById('play-pause-btn');
             if (isPlaying) {
-                btn.innerHTML = `<div class="equalizer-mini flex items-end gap-[1px]"><span></span><span></span><span></span></div>`;
+                // Ramadan-themed Equalizer (Gold bars pulsing)
+                btn.innerHTML = `
+                    <div class="eq-container">
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                    </div>`;
                 btn.classList.add('bg-emerald-100', 'border-emerald-200');
                 btn.classList.remove('bg-white');
             } else {
